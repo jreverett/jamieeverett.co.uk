@@ -11,6 +11,11 @@
   align-items: center;
 }
 
+.header-home-button a {
+  font-size: x-large;
+  font-weight: 300;
+}
+
 .header a {
   border-bottom: none;
 }
@@ -44,8 +49,4 @@
 .header nav > *:hover:after {
   width: 60%;
   left: 20%;
-}
-
-.header-home-button a {
-  font-size: x-large;
 }

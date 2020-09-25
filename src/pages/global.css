@@ -1,0 +1,32 @@
+:root {
+  --linkGrey: rgb(120, 120, 120);
+}
+
+html * {
+  font-family: "Helvetica Neue", sans-serif;
+  min-height: 0vw; /* safari needs this for calc, clamp, etc. to work ¯\_(ツ)_/¯ */
+}
+
+body {
+  margin: auto;
+  padding: 13px;
+  max-width: 960px;
+  color: #505050;
+}
+
+a {
+  color: var(--linkGrey);
+  text-decoration: none;
+  border-bottom: 2px solid #6bb6f8;
+}
+
+section {
+  padding-bottom: 30px;
+}
+
+header {
+  padding-top: 50px;
+  font-size: 40px;
+  font-weight: 300;
+  letter-spacing: 1.5px;
+}

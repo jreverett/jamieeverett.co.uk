@@ -9,7 +9,7 @@ export default function Header() {
     <div className="header-wrapper">
       <div className="header">
         <div className="header-home-button">
-          <Link to="/">Jamie Everett</Link>
+          <Link to="/">jamie everett</Link>
         </div>
         <nav>
           <a href={CV} target="_blank" rel="noopener noreferrer">
