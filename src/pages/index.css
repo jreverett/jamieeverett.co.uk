@@ -1,3 +1,23 @@
-header {
-  font-size: clamp(25px, 10vw, 45px);
+.welcome {
+  padding-top: 150px;
+  width: clamp(100%, 40%, 45%);
+  mix-blend-mode: lighten;
+}
+
+.welcome-video {
+  position: fixed;
+  top: 45%;
+  width: 500px;
+  transform: translateX(-30%) rotate(-90deg);
+}
+
+.welcome-info {
+  padding: 0px 30px 10px 0px;
+  font-size: clamp(10px, 5vw, 30px);
+  font-weight: 300;
+}
+
+.welcome-dropcap {
+  font-size: clamp(20px, 10vw, 65px);
+  font-weight: 500;
 }
