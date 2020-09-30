@@ -1,0 +1,27 @@
+.intro {
+  height: 85vh;
+}
+
+.intro-video {
+  position: absolute;
+  top: 45%;
+  width: 500px;
+  transform: translateX(-30%) rotate(-90deg);
+}
+
+.intro-text-container {
+  padding-top: 150px;
+  width: clamp(100%, 40%, 45%);
+  mix-blend-mode: lighten;
+}
+
+.intro-text {
+  padding: 0px 30px 10px 0px;
+  font-size: clamp(10px, 5vw, 30px);
+  font-weight: 300;
+}
+
+.intro-text-dropcap {
+  font-size: clamp(20px, 10vw, 65px);
+  font-weight: 500;
+}

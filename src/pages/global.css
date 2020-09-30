@@ -1,11 +1,12 @@
 :root {
-  --linkGrey: rgb(120, 120, 120);
+  --linkColour: rgb(169, 231, 255);
 }
 
 html * {
   font-family: "Helvetica Neue", sans-serif;
   min-height: 0vw; /* safari needs this for calc, clamp, etc. to work ¯\_(ツ)_/¯ */
   background-color: black;
+  scroll-behavior: smooth;
 }
 
 body {
@@ -15,19 +16,18 @@ body {
   color: white;
 }
 
-a {
-  color: var(--linkGrey);
-  text-decoration: none;
-  border-bottom: 2px solid #6bb6f8;
-}
-
 section {
-  padding-bottom: 30px;
+  height: 80vh;
+  /*border: 1px solid rgb(53, 22, 82); /* DEV PURPOSES ONLY */
 }
 
-header {
-  padding-top: 50px;
-  font-size: 40px;
+h1 {
+  font-size: clamp(25px, 6vw, 55px);
   font-weight: 300;
-  letter-spacing: 1.5px;
+}
+
+a {
+  color: var(--linkColour);
+  text-decoration: none;
+  border-bottom: 2px solid #4d6cd4;
 }

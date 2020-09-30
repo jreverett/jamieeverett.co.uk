@@ -17,6 +17,7 @@
 }
 
 .header a {
+  color: rgb(120, 120, 120);
   border-bottom: none;
 }
 
@@ -42,7 +43,7 @@
   width: 0;
   left: 50%;
   position: absolute;
-  background: var(--linkGrey);
+  background-color: rgb(120, 120, 120);
   transition: width 0.2s ease 0s, left 0.2s ease 0s;
 }
 

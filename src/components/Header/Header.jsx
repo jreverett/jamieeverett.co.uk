@@ -1,7 +1,7 @@
 import React from "react"
 import { Link } from "gatsby"
 
-import CV from "../files/CV.pdf"
+import CV from "../../files/CV.pdf"
 import "./Header.css"
 
 export default function Header() {

@@ -1,5 +1,5 @@
 import React from "react"
 
 export default function Blog() {
-  return <div>Nothing yet!</div>
+  return <div>Nothing yet! 😬</div>
 }
