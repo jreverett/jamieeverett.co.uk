@@ -7,9 +7,9 @@ export default function ScrollTop() {
   const [showScroll, setShowScroll] = useState(false)
 
   const checkScrollTop = () => {
-    if (!showScroll && window.pageYOffset > 300) {
+    if (!showScroll && window.pageYOffset > 500) {
       setShowScroll(true)
-    } else if (showScroll && window.pageYOffset <= 300) {
+    } else if (showScroll && window.pageYOffset <= 500) {
       setShowScroll(false)
     }
   }
@@ -22,6 +22,7 @@ export default function ScrollTop() {
 
   return (
     <button
+      key={Date.now()}
       className="scrollTop"
       onClick={scrollTop}
       style={{ display: showScroll ? "block" : "none" }}
