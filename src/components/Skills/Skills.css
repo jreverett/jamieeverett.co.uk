@@ -1,3 +1,7 @@
+#skills {
+  height: 950px;
+}
+
 #skills h1 {
   margin-bottom: 0px;
 }
@@ -9,7 +13,7 @@
 .skills-grid-container {
   display: grid;
   gap: 2rem;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  grid-template-columns: repeat(2, minmax(130px, 1fr));
 }
 
 .skills-grid-container h2 {
@@ -24,5 +28,14 @@
 .skills-grid-container li {
   list-style: none;
   padding-bottom: 10px;
-  padding-left: 0;
+}
+
+@media (min-width: 768px) {
+  #skills {
+    height: 700px;
+  }
+
+  .skills-grid-container {
+    grid-template-columns: repeat(4, minmax(130px, 1fr));
+  }
 }
