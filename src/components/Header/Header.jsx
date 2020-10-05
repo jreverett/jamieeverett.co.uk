@@ -16,6 +16,7 @@ export default function Header() {
             CV
           </a>
           <Link to="/blog">Blog</Link>
+          <a href="/#contact">Contact</a>
         </nav>
       </div>
     </div>

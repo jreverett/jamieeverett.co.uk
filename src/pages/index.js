@@ -1,7 +1,15 @@
 import React from "react"
 import { Helmet } from "react-helmet"
 
-import { Header, Intro, About, Skills, Projects, Contact } from "../components"
+import {
+  Header,
+  Intro,
+  About,
+  Skills,
+  Projects,
+  Contact,
+  ScrollTop,
+} from "../components"
 import "./index.css"
 
 export default function Home() {
@@ -16,6 +24,7 @@ export default function Home() {
       <Skills />
       <Projects />
       <Contact />
+      <ScrollTop />
     </>
   )
 }
