@@ -1,6 +1,6 @@
 import React from "react"
 
-import RedInk from "../../files/RedInk-v3.mp4"
+import RedInk from "../../files/RedInk-v1(compressed).mp4"
 import "./Intro.css"
 
 export default function Intro() {

@@ -1,7 +1,7 @@
 import React from "react"
 import { Helmet } from "react-helmet"
 
-import { Header, Intro, About, Contact } from "../components"
+import { Header, Intro, About, Skills, Projects, Contact } from "../components"
 import "./index.css"
 
 export default function Home() {
@@ -12,9 +12,9 @@ export default function Home() {
       </Helmet>
       <Header />
       <Intro />
-      <About /> {/* Another animation here, react-scroll-trigger? */}
-      {/* Personal Projects, css mosaic(?) */}
-      {/* <Contact /> */}
+      <About />
+      <Skills />
+      <Projects />
       <Contact />
     </>
   )
