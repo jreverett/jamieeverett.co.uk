@@ -3,10 +3,13 @@
   --accent: rgb(69, 255, 168);
 }
 
+html {
+  background-color: black;
+}
+
 html * {
   font-family: "Helvetica Neue", sans-serif;
   min-height: 0vw; /* safari needs this for calc, clamp, etc. to work ¯\_(ツ)_/¯ */
-  background-color: black;
   scroll-behavior: smooth;
 }
 

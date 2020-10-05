@@ -1,9 +1,3 @@
-/*
-    Header
-    404 number (knockout style)
-    Footer?
-*/
-
 import React from "react"
 import { Helmet } from "react-helmet"
 import { Link } from "gatsby"
