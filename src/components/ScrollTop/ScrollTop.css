@@ -24,7 +24,7 @@
   }
 }
 
-@media (hover: hover) {
+@media screen and (hover: hover) {
   .scrollTop:hover {
     opacity: 0.5;
   }

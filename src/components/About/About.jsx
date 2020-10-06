@@ -42,7 +42,7 @@ export default function About() {
           </p>
           <p>
             Having finished my degree, I am looking for a developer position in
-            the Bristol/Bath area
+            the Bristol/Bath area.
             {/* TODO */}
           </p>
           <p>

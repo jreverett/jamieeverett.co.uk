@@ -29,8 +29,8 @@
   display: inline-block;
   position: relative;
   margin-top: 3px;
-  margin-left: 40px;
-  font-size: large;
+  margin-left: 20px;
+  font-size: 14px;
   font-weight: 200;
 }
 
@@ -50,4 +50,17 @@
 .header nav > *:hover:after {
   width: 60%;
   left: 20%;
+}
+
+@media screen and (min-width: 376px) {
+  .header nav > * {
+    font-size: 18px;
+    margin-left: 30px;
+  }
+}
+
+@media screen and (min-width: 768px) {
+  .header nav > * {
+    margin-left: 50px;
+  }
 }

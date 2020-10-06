@@ -7,6 +7,7 @@ export default function Projects() {
     <section id="projects">
       <h1>Projects</h1>
       <p>They go here...{/*TODO*/}</p>
+      {/* CSS grid -> graphQL for projects */}
     </section>
   )
 }

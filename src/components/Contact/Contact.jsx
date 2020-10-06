@@ -18,13 +18,23 @@ export default function Contact() {
           name="contact"
         >
           <input type="hidden" name="bot-field" />
-          <label htmlFor="email">Email</label>
-          <input className="contact-form-input" type="email" name="email" />
-          <label htmlFor="name">Name</label>
-          <input className="contact-form-input" type="text" name="name" />
-          <label htmlFor="message">Message</label>
+          <label htmlFor="contact-form-email">Email</label>
+          <input
+            id="contact-form-email"
+            className="contact-form-input"
+            type="email"
+            name="emailInput"
+          />
+          <label htmlFor="contact-form-name">Name</label>
+          <input
+            id="contact-form-name"
+            className="contact-form-input"
+            type="text"
+            name="nameInput"
+          />
+          <label htmlFor="contact-form-message">Message</label>
           <textarea
-            id="contact-form-textarea"
+            id="contact-form-message"
             className="contact-form-input"
             name="message"
             placeholder="Say hi!"

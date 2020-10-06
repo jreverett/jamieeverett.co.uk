@@ -16,6 +16,7 @@ export default function Home() {
   return (
     <>
       <Helmet>
+        <html lang="en" />
         <title>Jamie Everett - Portfolio & Blog</title>
       </Helmet>
       <Header />
