@@ -1,5 +1,4 @@
 import React from "react"
-import { Helmet } from "react-helmet"
 
 import {
   Header,
@@ -15,10 +14,6 @@ import "./index.css"
 export default function Home() {
   return (
     <>
-      <Helmet>
-        <html lang="en" />
-        <title>Jamie Everett - Portfolio & Blog</title>
-      </Helmet>
       <Header />
       <Intro />
       <About />
