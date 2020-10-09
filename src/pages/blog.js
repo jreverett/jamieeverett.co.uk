@@ -2,11 +2,11 @@ import React from "react"
 
 export default function Blog() {
   return (
-    <div>
+    <h1>
       Coming soon!{" "}
-      <span role="img" aria-label="grimace-emoji">
-        😬
+      <span role="img" aria-label="Winking face with tongue">
+        😜
       </span>
-    </div>
+    </h1>
   )
 }
