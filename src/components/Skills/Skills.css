@@ -1,5 +1,5 @@
 #skills {
-  height: 950px;
+  height: 850px;
 }
 
 #skills h1 {
@@ -32,7 +32,7 @@
 
 @media screen and (min-width: 768px) {
   #skills {
-    height: 700px;
+    height: 550px;
   }
 
   .skills-grid-container {

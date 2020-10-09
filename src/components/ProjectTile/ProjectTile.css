@@ -62,9 +62,3 @@
 .project-tile-tags a {
   text-decoration: underline dotted palevioletred;
 }
-
-@media (min-width: 768px) {
-  .project-tile {
-    /* height: 385px; */
-  }
-}
