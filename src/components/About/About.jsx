@@ -27,7 +27,7 @@ export default function About() {
             <a
               href="https://goo.gl/maps/XmPcWCetS6GYZrgk7"
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
             >
               Bristol area.
             </a>
@@ -35,7 +35,7 @@ export default function About() {
           <p>
             I graduated this year from the University of Plymouth studying BSc
             (Hons.) Computing,{" "}
-            <a href={CV} target="_blank" rel="noreferrer">
+            <a href={CV} target="_blank" rel="noopener noreferrer">
               more on that here
             </a>
             .

@@ -1,0 +1,8 @@
+.project-tile-container {
+  display: grid;
+  gap: 15px;
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(clamp(160px, 20vw, 300px), 1fr)
+  );
+}

@@ -1,6 +1,6 @@
 :root {
-  --linkColour: rgb(169, 231, 255);
-  --accent: rgb(69, 255, 168);
+  --linkColour: 169, 231, 255;
+  --accent: 69, 255, 168;
 }
 
 html {
@@ -40,7 +40,7 @@ h2 {
 }
 
 a {
-  color: var(--linkColour);
+  color: rgb(var(--linkColour));
   font-weight: 400;
   text-decoration: none;
   border-bottom: 2px solid #4d6cd4;

@@ -9,10 +9,10 @@ import "./success.css"
 export default function success() {
   return (
     <>
+      <Header />
       <Helmet>
         <title>Message Sent</title>
       </Helmet>
-      <Header />
       <div className="success-container">
         <p>
           Thanks!{" "}

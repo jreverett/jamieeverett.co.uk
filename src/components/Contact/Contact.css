@@ -34,7 +34,7 @@ input.contact-form-input {
 .contact-form-submit {
   width: 110px;
   height: 33px;
-  background-color: var(--accent);
+  background-color: rgb(var(--accent));
   font-size: 15px;
   font-weight: bold;
   border-radius: 5px;
