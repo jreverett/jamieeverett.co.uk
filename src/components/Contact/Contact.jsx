@@ -1,5 +1,6 @@
 import React from "react"
 import { RiMailSendLine } from "react-icons/ri"
+import { SiLinkedin, SiGithub } from "react-icons/si"
 
 import "./Contact.css"
 
@@ -7,6 +8,22 @@ export default function Contact() {
   return (
     <section id="contact">
       <h1>Contact Me</h1>
+      <a
+        className="contact-form-social-button"
+        href="https://github.com/jreverett"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <SiGithub />
+      </a>
+      <a
+        className="contact-form-social-button"
+        href="https://www.linkedin.com/in/jamie-everett-135755153/"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <SiLinkedin />
+      </a>
       <div className="contact-form-container">
         <form
           className="contact-form"
