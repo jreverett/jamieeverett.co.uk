@@ -3,6 +3,7 @@ import React from "react"
 import {
   Header,
   Intro,
+  ScrollPrompt,
   About,
   Skills,
   Projects,
@@ -16,6 +17,7 @@ export default function Home() {
     <>
       <Header />
       <Intro />
+      <ScrollPrompt />
       <About />
       <Skills />
       <Projects />

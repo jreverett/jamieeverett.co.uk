@@ -1,4 +1,5 @@
 import Header from "./Header/Header.jsx"
+import ScrollPrompt from "./ScrollPrompt/ScrollPrompt.jsx"
 import Intro from "./Intro/Intro.jsx"
 import About from "./About/About.jsx"
 import Skills from "./Skills/Skills.jsx"
@@ -9,6 +10,7 @@ import ScrollTop from "./ScrollTop/ScrollTop.jsx"
 
 export {
   Header,
+  ScrollPrompt,
   Intro,
   About,
   Skills,

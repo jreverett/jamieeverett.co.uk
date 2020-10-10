@@ -12,6 +12,7 @@ export default function ProjectTile(props) {
       <img
         className="project-tile-image"
         src="https://via.placeholder.com/400x300"
+        alt=""
       ></img>
       <div className="project-tile-links">
         {sourceUrl && (
