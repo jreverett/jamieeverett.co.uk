@@ -2,7 +2,7 @@ import React from "react"
 import { Helmet } from "react-helmet"
 import { Link, StaticQuery, graphql } from "gatsby"
 
-import CV from "../../files/CV.pdf"
+import CV from "../../assets/docs/CV.pdf"
 import "./Header.css"
 
 export default function Header() {

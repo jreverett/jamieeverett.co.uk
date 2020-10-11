@@ -3,8 +3,8 @@ import { Helmet } from "react-helmet"
 import { Link } from "gatsby"
 
 import { Header } from "../components"
-import AnimatedBackground from "../files/BlueGreenOil-v2.mp4"
-import BackgroundPoster from "../files/BlueGreenOil.png"
+import AnimatedBackground from "../assets/videos/blue-green-oil-v2.mp4"
+import BackgroundPoster from "../assets/images/blue-green-oil.png"
 import "./404.css"
 
 export default function NotFound() {

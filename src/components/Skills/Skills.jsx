@@ -29,7 +29,7 @@ export default function Skills() {
               <li>jQuery</li>
               <li>Node.js</li>
               <li>Express.js</li>
-              <li>Gatsby (this site!)</li>
+              <li>Gatsby</li>
               <li>GraphQL</li>
               <li>.NET</li>
               <li>Entity Framework 6</li>
@@ -49,6 +49,7 @@ export default function Skills() {
             <h2>Additional</h2>
             <ul>
               <li>Agile methodology</li>
+              <li>Unified Modelling Language</li>
               <li>Mobile app development (Xcode)</li>
               <li>Premiere Pro & After Effects</li>
             </ul>

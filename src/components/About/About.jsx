@@ -1,8 +1,8 @@
 import React, { useRef } from "react"
 import { Waypoint } from "react-waypoint"
 
-import InkAnimation from "../../files/BluePinkInk-v4(compressed).mp4"
-import CV from "../../files/CV.pdf"
+import InkAnimation from "../../assets/videos/blue-pink-ink-v4-compressed.mp4"
+import CV from "../../assets/docs/CV.pdf"
 import "./About.css"
 
 export default function About() {
