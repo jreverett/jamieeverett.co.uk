@@ -1,19 +1,20 @@
 import React from "react"
+import Img from "gatsby-image"
 
 import "./ProjectTile.css"
 
 export default function ProjectTile(props) {
-  const { projectName, sourceUrl, CIUrl, CDUrl, tags } = props
+  const { projectName, projectImage, sourceUrl, CIUrl, CDUrl, tags } = props
   const tagUrls = props.tagUrls
 
   return (
     <div className="project-tile">
       <h3>{projectName}</h3>
-      <img
+      <Img
         className="project-tile-image"
-        src="https://via.placeholder.com/400x300"
-        alt=""
-      ></img>
+        fluid={projectImage.node.childImageSharp.fluid}
+        alt={`Screenshot of ${projectName} project`}
+      />
       <div className="project-tile-links">
         {sourceUrl && (
           <a href={sourceUrl} target="_blank" rel="noopener noreferrer">

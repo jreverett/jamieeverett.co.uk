@@ -5,6 +5,8 @@
 }
 
 .project-tile {
+  display: flex;
+  flex-direction: column;
   background-color: rgb(30, 30, 30);
   overflow: hidden;
   border: 1px solid rgb(var(--accent));
@@ -29,6 +31,7 @@
 
 .project-tile-tags {
   height: 100%;
+  flex-shrink: 100;
   display: flex;
   margin-top: 10px;
   padding-top: 12px;

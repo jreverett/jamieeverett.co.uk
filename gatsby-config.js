@@ -6,6 +6,7 @@ module.exports = {
     projects: [
       {
         name: "jamieeverett.co.uk",
+        imageName: "jamieeverett-co-uk",
         sourceUrl: "https://github.com/jreverett/jamieeverett.co.uk",
         CDUrl:
           "https://app.netlify.com/sites/quirky-chandrasekhar-d7c462/deploys",
@@ -13,6 +14,7 @@ module.exports = {
       },
       {
         name: "Upvent",
+        imageName: "upvent",
         sourceUrl: "https://github.com/jreverett/FinalYearProject",
         CIUrl: "https://dev.azure.com/jamieeverett0462/PRCO304-Upvent/_build",
         CDUrl: "https://upvent-app.herokuapp.com",
@@ -20,6 +22,7 @@ module.exports = {
       },
       {
         name: "Pictionary",
+        imageName: "pictionary",
         sourceUrl: "https://github.com/jreverett/SOFT355-PictionaryWebApp",
         CIUrl:
           "https://dev.azure.com/jamieeverett0462/SOFT355-Pictionary/_build",
@@ -36,16 +39,19 @@ module.exports = {
       },
       {
         name: "Snake 3D",
+        imageName: "snake-3d",
         sourceUrl: "https://github.com/jreverett/Snake-3D",
         tags: ["C++", "OpenGL"],
       },
       {
         name: "Model Loader",
+        imageName: "model-loader",
         sourceUrl: "https://github.com/jreverett/Model-Loader",
         tags: ["C++", "OpenGL"],
       },
       {
         name: "Dungeon Crawler",
+        imageName: "dungeon-crawler",
         sourceUrl: "https://github.com/jreverett/DungeonCrawler",
         tags: ["C++"],
       },
