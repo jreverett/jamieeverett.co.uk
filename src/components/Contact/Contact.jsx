@@ -30,16 +30,11 @@ export default function Contact() {
           name="contact"
           method="post"
           action="/success"
-          netlify-honeypot="bot-field"
+          data-netlify-honeypot="bot-field"
           data-netlify="true"
         >
+          <input type="hidden" name="bot-field"></input>
           <input type="hidden" name="form-name" value="contact" />
-          <p hidden>
-            <label htmlFor="contact-form-bot">
-              Don't fill this out if you're human:
-            </label>
-            <input id="contact-form-bot" name="bot-field"></input>
-          </p>
           <label htmlFor="contact-form-email">Email</label>
           <input
             id="contact-form-email"
