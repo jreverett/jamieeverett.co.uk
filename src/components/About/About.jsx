@@ -33,8 +33,8 @@ export default function About() {
             </a>
           </p>
           <p>
-            I graduated this year from the University of Plymouth studying BSc
-            (Hons.) Computing,{" "}
+            I graduated this year with first class honours from the University
+            of Plymouth studying BSc (Hons.) Computing,{" "}
             <a href={CV} target="_blank" rel="noopener noreferrer">
               more on that here
             </a>
@@ -43,7 +43,6 @@ export default function About() {
           <p>
             Having finished my degree, I am looking for a developer position in
             the Bristol/Bath area.
-            {/* TODO */}
           </p>
           <p>
             Feel free to browse some of my work below and{" "}
