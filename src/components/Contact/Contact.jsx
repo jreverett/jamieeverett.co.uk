@@ -31,7 +31,6 @@ export default function Contact() {
           method="post"
           action="/success"
           netlify-honeypot="bot-field"
-          data-netlify-recaptcha="true"
           data-netlify="true"
         >
           <input type="hidden" name="form-name" value="contact" />
@@ -67,7 +66,6 @@ export default function Contact() {
             cols="50"
             required
           />
-          <div data-netlify-recaptcha="true"></div>
           <button className="contact-form-submit" type="submit">
             Send <RiMailSendLine />
           </button>
