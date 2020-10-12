@@ -45,8 +45,24 @@ export default function About() {
             the Bristol/Bath area.
           </p>
           <p>
-            Feel free to browse some of my work below and{" "}
-            <a href="#contact">get in touch</a>!
+            Feel free to browse some of my work below and get in touch by{" "}
+            <a href="mailto:jreverett2442@gmail.com">email</a>,{" "}
+            <a
+              href="https://github.com/jreverett"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              GitHub
+            </a>{" "}
+            or{" "}
+            <a
+              href="https://www.linkedin.com/in/jamie-everett-135755153/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              LinkedIn
+            </a>
+            !
           </p>
         </div>
       </section>
