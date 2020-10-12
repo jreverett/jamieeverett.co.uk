@@ -45,7 +45,7 @@ export default function Contact() {
             id="contact-form-email"
             className="contact-form-input"
             type="email"
-            name="emailInput"
+            name="email"
             required
           />
           <label htmlFor="contact-form-name">Name</label>
@@ -53,7 +53,7 @@ export default function Contact() {
             id="contact-form-name"
             className="contact-form-input"
             type="text"
-            name="nameInput"
+            name="name"
             required
           />
           <label htmlFor="contact-form-message">Message</label>
