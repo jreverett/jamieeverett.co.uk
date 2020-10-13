@@ -5,7 +5,6 @@ import About from "./About/About.jsx"
 import Skills from "./Skills/Skills.jsx"
 import Projects from "./Projects/Projects.jsx"
 import ProjectTile from "./ProjectTile/ProjectTile.jsx"
-import Contact from "./Contact/Contact.jsx"
 import ScrollTop from "./ScrollTop/ScrollTop.jsx"
 
 export {
@@ -16,6 +15,5 @@ export {
   Skills,
   Projects,
   ProjectTile,
-  Contact,
   ScrollTop,
 }
