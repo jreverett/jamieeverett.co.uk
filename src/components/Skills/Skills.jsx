@@ -50,6 +50,7 @@ export default function Skills() {
             <ul>
               <li>Agile methodology</li>
               <li>Unified Modelling Language</li>
+              <li>REST API Development</li>
               <li>Mobile app development (Xcode)</li>
               <li>Premiere Pro & After Effects</li>
             </ul>
