@@ -1,7 +1,9 @@
-.project-tile h3 {
+.project-tile h2 {
   margin: 0;
   padding: 10px 0;
   padding-left: 5px;
+  font-size: clamp(13px, 4.5vw, 20px);
+  font-weight: normal;
 }
 
 .project-tile {
@@ -64,4 +66,10 @@
 
 .project-tile-tags a {
   text-decoration: underline dotted palevioletred;
+}
+
+@media screen and (min-width: 500px) {
+  .project-tile h2 {
+    font-weight: 200;
+  }
 }

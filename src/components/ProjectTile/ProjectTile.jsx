@@ -9,7 +9,7 @@ export default function ProjectTile(props) {
 
   return (
     <div className="project-tile">
-      <h3>{projectName}</h3>
+      <h2>{projectName}</h2>
       <Img
         className="project-tile-image"
         fluid={projectImage.node.childImageSharp.fluid}
