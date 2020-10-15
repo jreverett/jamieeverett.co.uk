@@ -3,6 +3,11 @@ const path = require("path")
 module.exports = {
   siteMetadata: {
     title: "Jamie Everett - Portfolio & Blog",
+    description:
+      "Personal website and project portfolio for Jamie Everett, graduate software developer ✌️",
+    author: "Jamie Everett",
+    image: "/me.jpg",
+    siteUrl: "https://www.jamieeverett.co.uk",
     projects: [
       {
         name: "jamieeverett.co.uk",
