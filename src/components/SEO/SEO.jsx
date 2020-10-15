@@ -25,21 +25,29 @@ export default function SEO({
     }
   `)
 
-  const metaDescription = description || site.siteMetadata.defaultDescription
-  const image = `${site.siteMetadata.siteUrl}${
-    metaImage || site.siteMetadata.defaultImage
-  }`
-  const canonical = pathname ? `${site.siteMetadata.siteUrl}${pathname}` : null
+  const {
+    defaultTitle,
+    defaultDescription,
+    author,
+    defaultImage,
+    siteUrl,
+  } = site.siteMetadata
+
+  const metaDescription = description || defaultDescription
+  const image = `${siteUrl}${metaImage || defaultImage}`
+  const url = `${siteUrl}${pathname || "/"}`
+  const canonical = pathname ? `${siteUrl}${pathname}` : null
 
   return (
     <Helmet
       title={title}
-      titleTemplate={`%s | ${site.siteMetadata.defaultTitle}`}
+      titleTemplate={`%s | ${defaultTitle}`}
       link={canonical ? [{ rel: "canonical", href: canonical }] : []}
       htmlAttributes={{ lang }}
       meta={[
         { name: "description", content: metaDescription },
         { name: "image", content: image },
+        { property: "og:url", content: url },
         { property: "og:title", content: title },
         { property: "og:description", content: metaDescription },
         { property: "og:image", content: image },
@@ -48,7 +56,7 @@ export default function SEO({
         { name: "twitter:title", content: title },
         { name: "twitter:description", content: metaDescription },
         { name: "twitter:image", content: image },
-        { name: "twitter:creator", content: site.siteMetadata.author },
+        { name: "twitter:creator", content: author },
       ].concat(meta)}
     />
   )
