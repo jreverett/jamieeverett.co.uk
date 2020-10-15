@@ -15,8 +15,8 @@ export default function SEO({
     query {
       site {
         siteMetadata {
-          title
-          description
+          defaultTitle: title
+          defaultDescription: description
           author
           defaultImage: image
           siteUrl
@@ -25,7 +25,7 @@ export default function SEO({
     }
   `)
 
-  const metaDescription = description || site.siteMetadata.description
+  const metaDescription = description || site.siteMetadata.defaultDescription
   const image = `${site.siteMetadata.siteUrl}${
     metaImage || site.siteMetadata.defaultImage
   }`
@@ -34,25 +34,22 @@ export default function SEO({
   return (
     <Helmet
       title={title}
-      titleTemplate={`%s | ${site.siteMetadata.title}`}
+      titleTemplate={`%s | ${site.siteMetadata.defaultTitle}`}
       link={canonical ? [{ rel: "canonical", href: canonical }] : []}
       htmlAttributes={{ lang }}
       meta={[
         { name: "description", content: metaDescription },
+        { name: "image", content: image },
         { property: "og:title", content: title },
         { property: "og:description", content: metaDescription },
+        { property: "og:image", content: image },
         { property: "og:type", content: "website" },
-        { property: "twitter:creator", content: site.siteMetadata.author },
-        { property: "twitter:title", content: title },
-        { property: "twitter:description", content: metaDescription },
-      ]
-        .concat(
-          { property: "og:image", content: image },
-          { name: "twitter:image", content: image },
-          { name: "twitter:card", content: "summary_large_image" },
-          { name: "twitter:card", content: "summary" }
-        )
-        .concat(meta)}
+        { name: "twitter:card", content: "summary" },
+        { name: "twitter:title", content: title },
+        { name: "twitter:description", content: metaDescription },
+        { name: "twitter:image", content: image },
+        { name: "twitter:creator", content: site.siteMetadata.author },
+      ].concat(meta)}
     />
   )
 }
