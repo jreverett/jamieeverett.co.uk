@@ -15,7 +15,7 @@ import "./index.css"
 export default function Home() {
   return (
     <>
-      <SEO />
+      <SEO title="Home" />
       <Header />
       <Intro />
       <ScrollPrompt />
