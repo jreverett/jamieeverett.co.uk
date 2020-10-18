@@ -52,6 +52,7 @@ export default function About() {
           </p>
           <p>
             Feel free to browse some of my work below and get in touch through{" "}
+            <a href="/#contact">the contact form</a>,{" "}
             <a
               href="https://github.com/jreverett"
               target="_blank"
