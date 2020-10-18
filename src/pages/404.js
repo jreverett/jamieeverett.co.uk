@@ -20,7 +20,6 @@ export default function NotFound() {
           poster={BackgroundPoster}
           autoPlay
           muted
-          disableRemotePlayback
           playsInline
           loop
         >
