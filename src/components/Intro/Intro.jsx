@@ -6,7 +6,13 @@ import "./Intro.css"
 export default function Intro() {
   return (
     <section id="intro">
-      <video className="intro-video" autoPlay muted playsInline>
+      <video
+        className="intro-video"
+        autoPlay
+        muted
+        disableRemotePlayback
+        playsInline
+      >
         <source src={RedInk}></source>
       </video>
       <div className="intro-text-container">

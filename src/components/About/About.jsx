@@ -17,7 +17,13 @@ export default function About() {
   return (
     <Waypoint onEnter={handleWaypointEnter}>
       <section id="about">
-        <video ref={aboutVideoRef} className="about-video" muted playsInline>
+        <video
+          ref={aboutVideoRef}
+          className="about-video"
+          muted
+          disableRemotePlayback
+          playsInline
+        >
           <source src={InkAnimation}></source>
         </video>
         <div className="about-text-container">
