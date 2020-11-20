@@ -15,7 +15,7 @@ export default function Header() {
           <a href={CV} target="_blank" rel="noopener noreferrer">
             CV
           </a>
-          <Link to="/blog">Blog</Link>
+          {/* <Link to="/blog">Blog</Link> */}
           <a href="/#contact">Contact</a>
         </nav>
       </div>
