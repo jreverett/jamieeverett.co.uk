@@ -1,5 +1,7 @@
 :root {
-  --linkColour: 169, 231, 255;
+  --link: 169, 231, 255;
+  --linkUnderline: 77, 108, 212;
+  --linkUnderlineHover: 90, 0, 150;
   --accent: 69, 255, 168;
 }
 
@@ -39,8 +41,18 @@ h2 {
 }
 
 a {
-  color: rgb(var(--linkColour));
+  color: rgb(var(--link));
   font-weight: 400;
   text-decoration: none;
-  border-bottom: 2px solid #4d6cd4;
+  border-bottom: 2px solid rgb(var(--linkUnderline));
+}
+
+@media screen and (hover: hover) {
+  a {
+    transition: border-bottom-color 80ms linear;
+  }
+
+  a:hover {
+    border-bottom-color: rgb(var(--linkUnderlineHover));
+  }
 }

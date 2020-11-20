@@ -54,3 +54,13 @@ input.contact-form-input {
   border-radius: 5px;
   border: none;
 }
+
+@media screen and (hover: hover) {
+  .contact-form-submit {
+    transition: opacity 100ms;
+  }
+
+  .contact-form-submit:hover {
+    opacity: 0.7;
+  }
+}

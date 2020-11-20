@@ -73,3 +73,10 @@
     font-weight: 200;
   }
 }
+
+@media screen and (hover: hover) {
+  .project-tile-tags a:hover {
+    border-bottom-color: white;
+    background-color: rgb(95, 62, 73);
+  }
+}
