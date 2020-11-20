@@ -25,7 +25,7 @@ export default function About() {
           <p>
             I'm a computing graduate in the{" "}
             <a
-              href="https://goo.gl/maps/XmPcWCetS6GYZrgk7"
+              href="https://goo.gl/maps/VbZyJHhXb4CwRYxN9"
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -41,8 +41,15 @@ export default function About() {
             .
           </p>
           <p>
-            Having finished my degree, I am looking for a developer position in
-            the Bristol/Bath area.
+            I'm now working as a software developer in central Bristol for{" "}
+            <a 
+              href="https://www.malvernpanalytical.com/en/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+            >
+              Malvern Panalytical
+            </a>
+            .
           </p>
           <p>
             Feel free to browse some of my work below and get in touch through{" "}
