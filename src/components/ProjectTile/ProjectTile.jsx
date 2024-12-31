@@ -1,18 +1,21 @@
 import React from "react"
-import Img from "gatsby-image"
+import { GatsbyImage, getImage } from "gatsby-plugin-image"
 
 import "./ProjectTile.css"
 
 export default function ProjectTile(props) {
   const { projectName, projectImage, sourceUrl, CIUrl, CDUrl, tags } = props
   const tagUrls = props.tagUrls
+  
+  // Convert the image data to the new format
+  const image = getImage(projectImage.node.childImageSharp.gatsbyImageData)
 
   return (
     <div className="project-tile">
       <h2>{projectName}</h2>
-      <Img
+      <GatsbyImage
         className="project-tile-image"
-        fluid={projectImage.node.childImageSharp.fluid}
+        image={image}
         alt={`Screenshot of ${projectName} project`}
       />
       <div className="project-tile-links">
