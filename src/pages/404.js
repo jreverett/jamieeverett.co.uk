@@ -1,49 +1,39 @@
-import * as React from "react"
+import React from "react"
+import { Helmet } from "react-helmet"
 import { Link } from "gatsby"
 
-const pageStyles = {
-  color: "#232129",
-  padding: "96px",
-  fontFamily: "-apple-system, Roboto, sans-serif, serif",
-}
-const headingStyles = {
-  marginTop: 0,
-  marginBottom: 64,
-  maxWidth: 320,
-}
+import { Header } from "../components"
+import AnimatedBackground from "../assets/videos/blue-green-oil-v2.mp4"
+import BackgroundPoster from "../assets/images/blue-green-oil.png"
+import "./404.css"
 
-const paragraphStyles = {
-  marginBottom: 48,
-}
-const codeStyles = {
-  color: "#8A6534",
-  padding: 4,
-  backgroundColor: "#FFF4DB",
-  fontSize: "1.25rem",
-  borderRadius: 4,
-}
-
-const NotFoundPage = () => {
+export default function NotFound() {
   return (
-    <main style={pageStyles}>
-      <h1 style={headingStyles}>Page not found</h1>
-      <p style={paragraphStyles}>
-        Sorry 😔, we couldn’t find what you were looking for.
-        <br />
-        {process.env.NODE_ENV === "development" ? (
-          <>
-            <br />
-            Try creating a page in <code style={codeStyles}>src/pages/</code>.
-            <br />
-          </>
-        ) : null}
-        <br />
-        <Link to="/">Go home</Link>.
-      </p>
-    </main>
+    <>
+      <Helmet>
+        <title>Page not found</title>
+      </Helmet>
+      <div>
+        <Header />
+        <video
+          className="e404-video"
+          poster={BackgroundPoster}
+          autoPlay
+          muted
+          playsInline
+          loop
+        >
+          <source src={AnimatedBackground}></source>
+        </video>
+        <div className="e404-container">
+          <p className="e404-number">404</p>
+          <div className="e404-text">
+            <p>
+              Page not found, <Link to="/">head back home.</Link>
+            </p>
+          </div>
+        </div>
+      </div>
+    </>
   )
 }
-
-export default NotFoundPage
-
-export const Head = () => <title>Not found</title>

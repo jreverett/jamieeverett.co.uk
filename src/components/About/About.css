@@ -1,0 +1,20 @@
+#about {
+  position: relative;
+  height: 600px;
+}
+
+#about p {
+  font-size: clamp(10px, 4.75vw, 22px);
+  font-weight: 300;
+}
+
+.about-video {
+  position: absolute;
+  width: 300px;
+  top: -50px;
+  right: -13px;
+}
+
+.about-text-container {
+  mix-blend-mode: lighten;
+}
