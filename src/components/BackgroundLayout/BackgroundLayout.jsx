@@ -30,7 +30,7 @@ export default function BackgroundLayout({ children }) {
     },
     {
       id: 'projects',
-      height: '800px',
+      height: '870px',
       colors: {
         color1: "rgba(52, 211, 153, 0.2)",  // Emerald
         color2: "rgba(168, 85, 247, 0.2)"   // Purple
