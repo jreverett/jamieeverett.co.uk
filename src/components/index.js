@@ -1,3 +1,4 @@
+import BackgroundLayout from "./BackgroundLayout/BackgroundLayout.jsx"
 import SEO from "./SEO/SEO.jsx"
 import Header from "./Header/Header.jsx"
 import ScrollPrompt from "./ScrollPrompt/ScrollPrompt.jsx"
@@ -6,10 +7,10 @@ import About from "./About/About.jsx"
 import Skills from "./Skills/Skills.jsx"
 import Projects from "./Projects/Projects.jsx"
 import ProjectTile from "./ProjectTile/ProjectTile.jsx"
-import Contact from "./Contact/Contact.jsx"
 import ScrollTop from "./ScrollTop/ScrollTop.jsx"
 
 export {
+  BackgroundLayout,
   SEO,
   Header,
   ScrollPrompt,
@@ -18,6 +19,5 @@ export {
   Skills,
   Projects,
   ProjectTile,
-  Contact,
   ScrollTop,
 }

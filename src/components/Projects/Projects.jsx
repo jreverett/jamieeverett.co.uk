@@ -28,9 +28,12 @@ export default function Projects() {
           node {
             name
             childImageSharp {
-              fluid(maxWidth: 500) {
-                ...GatsbyImageSharpFluid
-              }
+              gatsbyImageData(
+                width: 500
+                placeholder: BLURRED
+                formats: [AUTO, WEBP]
+                layout: CONSTRAINED
+              )
             }
           }
         }

@@ -1,6 +1,8 @@
 import React from "react"
 
+/* eslint-disable react/jsx-pascal-case */
 import {
+  BackgroundLayout,
   SEO,
   Header,
   Intro,
@@ -8,23 +10,23 @@ import {
   About,
   Skills,
   Projects,
-  Contact,
   ScrollTop,
 } from "../components"
-import "./index.css"
 
 export default function Home() {
   return (
     <>
       <SEO title="Home" />
-      <Header />
-      <Intro />
-      <ScrollPrompt />
-      <About />
-      <Skills />
-      <Projects />
-      <Contact />
-      <ScrollTop />
+      <BackgroundLayout>
+        <Header />
+        <Intro />
+        <ScrollPrompt />
+        <About />
+        <Skills />
+        <Projects />
+        <ScrollTop />
+      </BackgroundLayout>
     </>
   )
 }
+/* eslint-enable react/jsx-pascal-case */

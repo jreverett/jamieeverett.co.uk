@@ -8,13 +8,6 @@
   font-weight: 300;
 }
 
-.about-video {
-  position: absolute;
-  width: 300px;
-  top: -50px;
-  right: -13px;
-}
-
 .about-text-container {
   mix-blend-mode: lighten;
 }

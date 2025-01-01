@@ -1,5 +1,7 @@
+/**
+ * @type {import('gatsby').GatsbyConfig}
+ */
 const path = require("path")
-
 module.exports = {
   siteMetadata: {
     title: "Jamie Everett - Portfolio & Blog",
@@ -87,6 +89,7 @@ module.exports = {
       },
     },
     `gatsby-plugin-react-helmet`,
+    `gatsby-plugin-image`,
     `gatsby-transformer-sharp`,
     `gatsby-plugin-sharp`,
   ],

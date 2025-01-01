@@ -1,80 +1,61 @@
-import React, { useRef } from "react"
-import { Waypoint } from "react-waypoint"
-
-import InkAnimation from "../../assets/videos/blue-pink-ink-v4-compressed.mp4"
+import React from "react"
 import CV from "../../assets/docs/CV.pdf"
 import "./About.css"
 
 export default function About() {
-  const aboutVideoRef = useRef(null)
-  let videoHasPlayed = false
-
-  function handleWaypointEnter() {
-    if (!videoHasPlayed) aboutVideoRef.current.play()
-    videoHasPlayed = true
-  }
-
   return (
-    <Waypoint onEnter={handleWaypointEnter}>
-      <section id="about">
-        <video ref={aboutVideoRef} className="about-video" muted playsInline>
-          <source src={InkAnimation}></source>
-        </video>
-        <div className="about-text-container">
-          <h1>About</h1>
-          <p>
-            I'm a computing graduate in the{" "}
-            <a
-              href="https://goo.gl/maps/VbZyJHhXb4CwRYxN9"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Bristol area.
-            </a>
-          </p>
-          <p>
-            I graduated this year with first class honours from the University
-            of Plymouth studying BSc (Hons.) Computing,{" "}
-            <a href={CV} target="_blank" rel="noopener noreferrer">
-              more on that here
-            </a>
-            .
-          </p>
-          <p>
-            I'm now working as a software developer in central Bristol for{" "}
-            <a 
-              href="https://www.malvernpanalytical.com/en/" 
-              target="_blank" 
-              rel="noopener noreferrer"
-            >
-              Malvern Panalytical
-            </a>
-            .
-          </p>
-          <p>
-            Feel free to browse some of my work below and get in touch through{" "}
-            <a href="/#contact">the contact form</a>,{" "}
-            <a
-              href="https://github.com/jreverett"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              GitHub
-            </a>
-            ,{" "}
-            <a
-              href="https://www.linkedin.com/in/jamie-everett-135755153/"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              LinkedIn
-            </a>{" "}
-            or email me at{" "}
-            <a href="mailto:jreverett2442@gmail.com">jreverett2442@gmail.com</a>
-            !
-          </p>
-        </div>
-      </section>
-    </Waypoint>
+    <section id="about">
+      <div className="about-text-container">
+        <h1>About</h1>
+        <p>
+          I'm a senior software engineer in {" "}
+          <a
+            href="https://goo.gl/maps/VbZyJHhXb4CwRYxN9"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Bristol, UK
+          </a>
+          , working for{" "}
+          <a
+            href="https://www.inductosense.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Inductosense
+          </a>
+          .
+        </p>
+        <p>
+          I graduated from the University of Plymouth with first class honours, studying BSc (Hons.) Computing.
+        </p>
+        <p>
+          I have since been working primarily as a .NET developer, spending my time on .NET development,
+          Azure cloud, DevOps setups, and designing and managing projects that solve real-world problems.{" "}
+          <a href={CV} target="_blank" rel="noopener noreferrer">
+            More on that here
+          </a>
+          .
+        </p>
+        <p>
+          Feel free to browse some of my personal projects below and get in touch through{" "}
+          <a
+            href="https://github.com/jreverett"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            GitHub{" "}
+          </a>
+          or{" "}
+          <a
+            href="https://www.linkedin.com/in/jamie-everett-135755153/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            LinkedIn!
+          </a>
+        </p>
+      </div>
+    </section>
   )
 }

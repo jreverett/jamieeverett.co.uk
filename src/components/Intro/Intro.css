@@ -1,23 +1,108 @@
-.intro-video {
+.intro {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  border: 1px solid red;
+  padding: 13px calc((100vw - min(960px, 100%)) / 2 + 13px);
+  background: linear-gradient(to bottom right, #111827, #000000);
+}
+
+.background-effects {
   position: absolute;
-  top: 45%;
-  width: 500px;
-  transform: translateX(-24.5%) rotate(-90deg);
+  inset: 0;
+  pointer-events: none;
 }
 
-.intro-text-container {
-  padding-top: 150px;
-  width: clamp(100%, 40%, 45%);
-  mix-blend-mode: lighten;
+.blur-effect {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
 }
 
-.intro-text {
-  padding: 0px 30px 10px 0px;
-  font-size: clamp(10px, 5vw, 30px);
+.blur-effect-1 {
+  top: 5rem;
+  left: 25%;
+  width: 30rem;
+  height: 30rem;
+  background: rgba(168, 85, 247, 0.2); /* Purple */
+}
+
+.blur-effect-2 {
+  bottom: 10rem;
+  right: 25%;
+  width: 30rem;
+  height: 30rem;
+  background: rgba(236, 72, 153, 0.2); /* Pink */
+}
+
+.intro-content {
+  position: relative;
+  z-index: 10;
+  min-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.intro-title {
+  font-size: 3rem;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 2rem;
+  opacity: 0;
+  transform: translateY(1rem);
+  transition: opacity 1s ease, transform 1s ease;
+}
+
+.intro-title.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.intro-subtitle {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 2rem;
   font-weight: 300;
+  color: #D1D5DB;
 }
 
-.intro-text-dropcap {
-  font-size: clamp(20px, 10vw, 65px);
-  font-weight: 500;
+.terminal {
+  font-family: monospace;
+  color: #34D399;
+  font-size: 1.125rem;
+}
+
+.cursor {
+  display: inline-block;
+  width: 0.75rem;
+  height: 1.25rem;
+  background-color: #34D399;
+  margin-left: 0.1rem;
+  vertical-align: middle;
+}
+
+.cursor.hidden {
+  opacity: 0;
+}
+
+.cursor.visible {
+  opacity: 1;
+}
+
+/* Media Queries */
+@media (min-width: 768px) {
+  .intro-title {
+    font-size: 4rem;
+  }
+
+  .intro-subtitle {
+    font-size: 2.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .intro-title {
+    font-size: 5rem;
+  }
 }
