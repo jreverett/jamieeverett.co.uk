@@ -1,0 +1,37 @@
+.section-background {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    pointer-events: none;
+    padding: 5vh 0;
+    height: calc(100% - 10vh);
+}
+  
+.background-blob {
+    position: absolute;
+    width: 35rem;
+    height: 35rem;
+    border-radius: 50%;
+    filter: blur(100px);
+    opacity: 0.6;
+    transform: translate(-50%, -50%);
+}
+
+/* Position blobs with some space from edges */
+.background-blob:first-child {
+    top: 35% !important;
+    left: 35% !important;
+}
+
+.background-blob:last-child {
+    top: 65% !important;
+    left: 65% !important;
+}
+  
+@media (min-width: 1024px) {
+    .background-blob {
+        width: 40rem;
+        height: 40rem;
+        filter: blur(120px);
+    }
+}

@@ -60,7 +60,7 @@ export default function Intro() {
   }, [])
 
   return (
-    <section id="intro" className="intro">
+    <section id="intro">
       <div className="background-effects">
         <div className="blur-effect blur-effect-1" />
         <div className="blur-effect blur-effect-2" />

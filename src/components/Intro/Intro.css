@@ -1,8 +1,9 @@
-/* src/components/Intro/Intro.css */
 .intro {
-  min-height: 100vh;
   position: relative;
-  overflow: hidden;
+  width: 100%;
+  min-height: 100vh;
+  border: 1px solid red;
+  padding: 13px calc((100vw - min(960px, 100%)) / 2 + 13px);
   background: linear-gradient(to bottom right, #111827, #000000);
 }
 
@@ -41,13 +42,10 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 1.5rem;
-  max-width: 48rem;
-  margin: 0 auto;
 }
 
 .intro-title {
-  font-size: 4rem;
+  font-size: 3rem;
   font-weight: 700;
   color: white;
   margin-bottom: 2rem;
@@ -71,7 +69,7 @@
 
 .terminal {
   font-family: monospace;
-  color: #34D399; /* Emerald */
+  color: #34D399;
   font-size: 1.125rem;
 }
 
@@ -80,7 +78,7 @@
   width: 0.75rem;
   height: 1.25rem;
   background-color: #34D399;
-  margin-left: 0.25rem;
+  margin-left: 0.1rem;
   vertical-align: middle;
 }
 
@@ -94,12 +92,8 @@
 
 /* Media Queries */
 @media (min-width: 768px) {
-  .intro-content {
-    padding: 2rem 4rem;
-  }
-
   .intro-title {
-    font-size: 5rem;
+    font-size: 4rem;
   }
 
   .intro-subtitle {
@@ -109,6 +103,6 @@
 
 @media (min-width: 1024px) {
   .intro-title {
-    font-size: 6rem;
+    font-size: 5rem;
   }
 }

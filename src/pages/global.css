@@ -14,12 +14,18 @@
     min-height: 0vw; /* safari needs this for calc, clamp, etc. to work ¯\_(ツ)_/¯ */
     scroll-behavior: smooth;
   }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+  }
   
   body {
     margin: auto;
-    padding: 13px;
     max-width: 960px;
     color: white;
+    position: relative;
   }
   
   section {
