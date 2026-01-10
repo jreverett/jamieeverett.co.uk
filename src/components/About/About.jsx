@@ -1,5 +1,4 @@
 import React from "react"
-import CV from "../../assets/docs/CV.pdf"
 import "./About.css"
 
 export default function About() {
@@ -32,7 +31,7 @@ export default function About() {
         <p>
           I have since been working primarily as a .NET developer, spending my time on .NET development,
           Azure cloud, DevOps setups, and designing and managing projects that solve real-world problems.{" "}
-          <a href={CV} target="_blank" rel="noopener noreferrer">
+          <a href="/cv.pdf" target="_blank" rel="noopener noreferrer">
             More on that here
           </a>
           .
