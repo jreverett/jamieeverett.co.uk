@@ -1,0 +1,20 @@
+# Serve CV at any case variation
+[[redirects]]
+  from = "/cv"
+  to = "/cv.pdf"
+  status = 200
+
+[[redirects]]
+  from = "/CV"
+  to = "/cv.pdf"
+  status = 200
+
+[[redirects]]
+  from = "/Cv"
+  to = "/cv.pdf"
+  status = 200
+
+[[redirects]]
+  from = "/cV"
+  to = "/cv.pdf"
+  status = 200
