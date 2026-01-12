@@ -969,9 +969,6 @@ export default function Home() {
           </div>
         </section>
 
-        <footer>
-          <p>© 2025 Jamie Everett · Bristol, UK</p>
-        </footer>
       </div>
     </>
   )

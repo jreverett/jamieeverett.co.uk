@@ -43,19 +43,25 @@
   --text-muted: rgba(255, 255, 255, 0.5);
 }
 
-html {
+html,
+body {
   scroll-behavior: smooth;
   background: #0a0a0f;
+  margin: 0;
+  width: 100%;
+  max-width: none;
 }
 
 body {
   font-family: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif;
-  background: #0a0a0f;
   color: var(--text-primary);
   overflow-x: hidden;
   line-height: 1.6;
   min-height: 100vh;
-  margin: 0;
+}
+
+#___gatsby,
+#gatsby-focus-wrapper {
   width: 100%;
   max-width: none;
 }
@@ -73,6 +79,11 @@ body {
 .content {
   position: relative;
   z-index: 10;
+  font-family: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.content * {
+  font-family: inherit;
 }
 
 .hero {
@@ -223,7 +234,7 @@ section {
   padding: 5rem 2rem;
   padding-left: 8%;
   padding-right: 8%;
-  height: auto;
+  height: auto !important;
 }
 
 .content a {
