@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react"
-import { SEO } from "../components"
+import SEO from "../components/SEO/SEO.jsx"
 import "./index.css"
 
 export default function Home() {
@@ -27,9 +27,6 @@ export default function Home() {
     const DYE_RESOLUTION = 1024
     const SPLAT_RADIUS = 0.25
     const SPLAT_FORCE = 4000
-
-    let scrollY = 0
-    let scrollProgress = 0
 
     const ext = {
       formatRGBA: { internalFormat: gl.RGBA, format: gl.RGBA },
@@ -83,7 +80,7 @@ export default function Home() {
       uniform sampler2D uTexture;
       uniform float uOpacity;
       varying vec2 vUv;
-      
+
       void main () {
         vec3 c = texture2D(uTexture, vUv).rgb;
         gl_FragColor = vec4(c * uOpacity, 1.0);
@@ -450,14 +447,14 @@ export default function Home() {
       gl.drawArrays(gl.TRIANGLE_FAN, 0, 4)
     }
 
-    const splat = (x, y, dx, dy, color) => {
+    const splat = (x, y, dx, dy, color, radius = SPLAT_RADIUS) => {
       const prog = programs.splat
       gl.useProgram(prog.program)
       gl.uniform1i(prog.uniforms.uTarget, velocity.read.attach(0))
       gl.uniform1f(prog.uniforms.aspectRatio, canvas.width / canvas.height)
       gl.uniform2f(prog.uniforms.point, x, y)
       gl.uniform3f(prog.uniforms.color, dx, dy, 0.0)
-      gl.uniform1f(prog.uniforms.radius, SPLAT_RADIUS / 100.0)
+      gl.uniform1f(prog.uniforms.radius, radius / 100.0)
       blit(velocity.write)
       velocity.swap()
 
@@ -520,17 +517,15 @@ export default function Home() {
 
       gl.uniform1i(programs.advection.uniforms.uVelocity, velocity.read.attach(0))
       gl.uniform1i(programs.advection.uniforms.uSource, dye.read.attach(1))
-      gl.uniform1f(programs.advection.uniforms.dissipation, 0.985 - scrollProgress * 0.015)
+      gl.uniform1f(programs.advection.uniforms.dissipation, 0.985)
       blit(dye.write)
       dye.swap()
     }
 
     const render = () => {
-      const opacity = 1.0 - scrollProgress * 0.4
-
       gl.useProgram(programs.display.program)
       gl.uniform1i(programs.display.uniforms.uTexture, dye.read.attach(0))
-      gl.uniform1f(programs.display.uniforms.uOpacity, opacity)
+      gl.uniform1f(programs.display.uniforms.uOpacity, 1.0)
       blit(null)
     }
 
@@ -560,7 +555,18 @@ export default function Home() {
 
     pointers.push(createPointer())
 
+    const isInteractiveElement = element => {
+      if (!element) return false
+      const interactiveTags = ['A', 'BUTTON', 'INPUT', 'TEXTAREA', 'SELECT']
+      if (interactiveTags.includes(element.tagName)) return true
+      if (element.closest('a, button, input, textarea, select')) return true
+      const style = window.getComputedStyle(element)
+      if (style.userSelect !== 'none' && style.cursor === 'text') return true
+      return false
+    }
+
     const handleMouseDown = event => {
+      if (isInteractiveElement(event.target)) return
       const pointer = pointers[0]
       pointer.down = true
       updatePointerPos(pointer, event.clientX, event.clientY)
@@ -569,17 +575,17 @@ export default function Home() {
     const handleMouseMove = event => {
       const pointer = pointers[0]
       updatePointerPos(pointer, event.clientX, event.clientY)
-      pointer.moved = pointer.down
+      if (pointer.down && !isInteractiveElement(event.target)) {
+        pointer.moved = true
+      }
     }
 
     const handleMouseUp = () => {
       pointers[0].down = false
     }
 
-    const touchOptions = { passive: false }
-
     const handleTouchStart = event => {
-      event.preventDefault()
+      if (event.target !== canvas) return
       const touches = event.targetTouches
       while (pointers.length < touches.length) {
         pointers.push(createPointer())
@@ -591,7 +597,7 @@ export default function Home() {
     }
 
     const handleTouchMove = event => {
-      event.preventDefault()
+      if (event.target !== canvas) return
       const touches = event.targetTouches
       for (let i = 0; i < touches.length; i += 1) {
         updatePointerPos(pointers[i], touches[i].clientX, touches[i].clientY)
@@ -632,12 +638,6 @@ export default function Home() {
       }
     }
 
-    const handleScroll = () => {
-      scrollY = window.scrollY
-      const maxScroll = document.documentElement.scrollHeight - window.innerHeight
-      scrollProgress = Math.min(scrollY / maxScroll, 1)
-    }
-
     const observer = new IntersectionObserver(
       entries => {
         entries.forEach(entry => {
@@ -671,11 +671,12 @@ export default function Home() {
         }
       })
 
-      if (Math.random() < 0.006 * (1 - scrollProgress * 0.7)) {
+      if (Math.random() < 0.012) {
         const x = Math.random()
         const y = Math.random()
         const angle = Math.random() * Math.PI * 2
         const force = 60 + Math.random() * 40
+        const radius = 0.1 + Math.random() * 0.35
 
         let color
         const colorRoll = Math.random()
@@ -699,7 +700,7 @@ export default function Home() {
           color = { r: 0.2, g: 0.8 + Math.random() * 0.2, b: 0.5 + Math.random() * 0.2 }
         }
 
-        splat(x, y, Math.cos(angle) * force, Math.sin(angle) * force, color)
+        splat(x, y, Math.cos(angle) * force, Math.sin(angle) * force, color, radius)
       }
 
       step(dt)
@@ -708,28 +709,26 @@ export default function Home() {
       animationFrameId = window.requestAnimationFrame(animate)
     }
 
-    canvas.addEventListener("mousedown", handleMouseDown)
-    canvas.addEventListener("mousemove", handleMouseMove)
-    window.addEventListener("mouseup", handleMouseUp)
-    canvas.addEventListener("touchstart", handleTouchStart, touchOptions)
-    canvas.addEventListener("touchmove", handleTouchMove, touchOptions)
-    canvas.addEventListener("touchend", handleTouchEnd)
+    document.addEventListener("mousedown", handleMouseDown)
+    document.addEventListener("mousemove", handleMouseMove)
+    document.addEventListener("mouseup", handleMouseUp)
+    document.addEventListener("touchstart", handleTouchStart, { passive: true })
+    document.addEventListener("touchmove", handleTouchMove, { passive: true })
+    document.addEventListener("touchend", handleTouchEnd, { passive: true })
     document.addEventListener("click", handleClick)
-    window.addEventListener("scroll", handleScroll, { passive: true })
     window.addEventListener("resize", resize)
 
     initFluid()
     animate()
 
     return () => {
-      canvas.removeEventListener("mousedown", handleMouseDown)
-      canvas.removeEventListener("mousemove", handleMouseMove)
-      window.removeEventListener("mouseup", handleMouseUp)
-      canvas.removeEventListener("touchstart", handleTouchStart, touchOptions)
-      canvas.removeEventListener("touchmove", handleTouchMove, touchOptions)
-      canvas.removeEventListener("touchend", handleTouchEnd)
+      document.removeEventListener("mousedown", handleMouseDown)
+      document.removeEventListener("mousemove", handleMouseMove)
+      document.removeEventListener("mouseup", handleMouseUp)
+      document.removeEventListener("touchstart", handleTouchStart)
+      document.removeEventListener("touchmove", handleTouchMove)
+      document.removeEventListener("touchend", handleTouchEnd)
       document.removeEventListener("click", handleClick)
-      window.removeEventListener("scroll", handleScroll)
       window.removeEventListener("resize", resize)
       observer.disconnect()
       if (animationFrameId) {
@@ -740,6 +739,7 @@ export default function Home() {
 
   return (
     <>
+      {/* eslint-disable-next-line react/jsx-pascal-case */}
       <SEO title="Jamie Everett - Software Engineering Manager" />
       <canvas id="fluid-canvas" ref={canvasRef} />
       <div className="content">
@@ -799,9 +799,11 @@ export default function Home() {
               that helps teams ship with confidence.
             </p>
             <p className="section-body">
-              When I&apos;m not architecting systems, I enjoy mentoring engineers, refining
-              processes, and exploring new ways to deliver customer value through thoughtful
-              software design. You can explore more detail in my{" "}
+              As well as exploring the latest AI tools, I also enjoy baking desserts and trying new recipes.
+              I like building things that work well and taste good.
+            </p>
+            <p className="section-body">
+              You can explore more detail in my{" "}
               <a href="/cv.pdf" target="_blank" rel="noreferrer">
                 CV
               </a>
