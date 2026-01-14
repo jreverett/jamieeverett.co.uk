@@ -747,7 +747,7 @@ export default function Home() {
           <div className="hero-content">
             <h1>Jamie Everett</h1>
             <p className="subtitle">Software Engineering Manager</p>
-            <p className="intro">
+            <p className="hero-intro">
               Building robust desktop and cloud applications with 5+ years of experience.
               Currently focused on ultrasonic NDT monitoring systems at Inductosense.
             </p>
@@ -764,7 +764,7 @@ export default function Home() {
             </div>
           </div>
           <div className="scroll-hint">
-            <span>Scroll to explore</span>
+            <span>Scroll for more</span>
             <div className="arrow" />
           </div>
         </section>
@@ -963,7 +963,7 @@ export default function Home() {
                 GitHub
               </a>
               <a href="/cv.pdf" data-splash="link">
-                Download CV
+                View CV
               </a>
             </div>
           </div>

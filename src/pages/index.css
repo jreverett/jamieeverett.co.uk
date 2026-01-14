@@ -96,28 +96,32 @@ body {
   position: relative;
 }
 
-.hero::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 55%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    rgba(10, 10, 15, 0.92) 0%,
-    rgba(10, 10, 15, 0.8) 50%,
-    rgba(10, 10, 15, 0.3) 80%,
-    transparent 100%
-  );
-  pointer-events: none;
-  z-index: 1;
-}
 
 .hero-content {
   position: relative;
   z-index: 2;
   max-width: 580px;
+}
+
+.hero-content::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 140%;
+  height: 140%;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(10, 10, 15, 0.95) 0%,
+    rgba(10, 10, 15, 0.85) 25%,
+    rgba(10, 10, 15, 0.6) 50%,
+    rgba(10, 10, 15, 0.3) 70%,
+    transparent 100%
+  );
+  filter: blur(40px);
+  pointer-events: none;
+  z-index: -1;
 }
 
 .hero h1 {
@@ -136,12 +140,12 @@ body {
   margin-bottom: 1.5rem;
 }
 
-.hero .intro {
+.hero-intro {
   color: var(--text-secondary);
   font-size: clamp(1rem, 2vw, 1.15rem);
   margin-bottom: 2rem;
   line-height: 1.7;
-  max-width: 480px;
+  max-width: 560px;
 }
 
 .hero-links {
@@ -179,20 +183,20 @@ body {
   width: 100%;
 }
 
-.cv-link {
-  font-family: 'Geist Mono', monospace;
-  font-size: 0.85rem;
-  padding: 0.6rem 1.2rem;
-  border: 1px solid var(--accent);
-  border-radius: 6px;
-  background: rgba(0, 212, 212, 0.08);
-  transition: all 0.3s ease;
+.hero-links .cv-link {
+  font-family: 'Geist Mono', monospace !important;
+  font-size: 0.9rem !important;
+  padding: 0.85rem 1.6rem !important;
+  border: 1px solid var(--accent) !important;
+  border-radius: 8px !important;
+  background: rgba(0, 212, 212, 0.08) !important;
+  transition: all 0.3s ease !important;
 }
 
-.cv-link:hover {
-  background: rgba(0, 212, 212, 0.2);
-  box-shadow: 0 0 25px var(--accent-glow);
-  color: var(--accent);
+.hero-links .cv-link:hover {
+  background: rgba(0, 212, 212, 0.2) !important;
+  box-shadow: 0 0 25px var(--accent-glow) !important;
+  color: var(--accent) !important;
 }
 
 .scroll-hint {
@@ -207,6 +211,11 @@ body {
   align-items: center;
   gap: 0.75rem;
   z-index: 2;
+}
+
+.scroll-hint span {
+  line-height: 1;
+  transform: translateY(9px);
 }
 
 .scroll-hint .arrow {
@@ -231,9 +240,17 @@ body {
 }
 
 section {
-  padding: 5rem 2rem;
+  padding: 3rem 2rem;
   padding-left: 8%;
   padding-right: 8%;
+}
+
+/* Override legacy component CSS fixed heights */
+#about,
+#skills,
+#experience,
+#projects,
+#contact {
   height: auto !important;
 }
 
