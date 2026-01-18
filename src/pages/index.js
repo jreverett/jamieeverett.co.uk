@@ -654,11 +654,34 @@ export default function Home() {
 
     let animationFrameId
     let resizeTimeout
+    let lastWidth = window.innerWidth
+    let lastHeight = window.innerHeight
 
     const resize = () => {
-      canvas.width = window.innerWidth
-      canvas.height = window.innerHeight
-      initFluid()
+      const newWidth = window.innerWidth
+      const newHeight = window.innerHeight
+
+      // Calculate changes
+      const widthChanged = Math.abs(newWidth - lastWidth) > 1
+      const heightDiff = Math.abs(newHeight - lastHeight)
+
+      // Ignore small height-only changes (mobile address bar show/hide)
+      // These typically cause 50-100px height changes but no width change
+      const isMobileAddressBarChange = !widthChanged && heightDiff > 0 && heightDiff < 150
+
+      if (isMobileAddressBarChange) {
+        // Don't resize at all - this preserves the splashes
+        return
+      }
+
+      // For real resize events, update canvas and reinitialize
+      if (widthChanged || heightDiff > 0) {
+        canvas.width = newWidth
+        canvas.height = newHeight
+        lastWidth = newWidth
+        lastHeight = newHeight
+        initFluid()
+      }
     }
 
     const debouncedResize = () => {
