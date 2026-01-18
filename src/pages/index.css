@@ -74,6 +74,10 @@ body {
   height: 100%;
   z-index: 0;
   background: #0a0a0f;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 .content {
@@ -556,7 +560,7 @@ footer {
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 360px) {
   .hero-links {
     flex-direction: column;
     align-items: flex-start;

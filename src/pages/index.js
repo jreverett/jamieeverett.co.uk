@@ -652,13 +652,31 @@ export default function Home() {
     const cards = document.querySelectorAll(".section-card")
     cards.forEach(card => observer.observe(card))
 
+    let animationFrameId
+    let resizeTimeout
+
     const resize = () => {
       canvas.width = window.innerWidth
       canvas.height = window.innerHeight
       initFluid()
     }
 
-    let animationFrameId
+    const debouncedResize = () => {
+      clearTimeout(resizeTimeout)
+      resizeTimeout = setTimeout(resize, 150)
+    }
+
+    const handleContextLost = (event) => {
+      event.preventDefault()
+      if (animationFrameId) {
+        window.cancelAnimationFrame(animationFrameId)
+      }
+    }
+
+    const handleContextRestored = () => {
+      initFluid()
+      animate()
+    }
     const animate = () => {
       const now = Date.now()
       const dt = Math.min((now - lastTime) / 1000, 0.016)
@@ -716,7 +734,9 @@ export default function Home() {
     document.addEventListener("touchmove", handleTouchMove, { passive: true })
     document.addEventListener("touchend", handleTouchEnd, { passive: true })
     document.addEventListener("click", handleClick)
-    window.addEventListener("resize", resize)
+    window.addEventListener("resize", debouncedResize)
+    canvas.addEventListener("webglcontextlost", handleContextLost, false)
+    canvas.addEventListener("webglcontextrestored", handleContextRestored, false)
 
     initFluid()
     animate()
@@ -729,8 +749,11 @@ export default function Home() {
       document.removeEventListener("touchmove", handleTouchMove)
       document.removeEventListener("touchend", handleTouchEnd)
       document.removeEventListener("click", handleClick)
-      window.removeEventListener("resize", resize)
+      window.removeEventListener("resize", debouncedResize)
+      canvas.removeEventListener("webglcontextlost", handleContextLost)
+      canvas.removeEventListener("webglcontextrestored", handleContextRestored)
       observer.disconnect()
+      clearTimeout(resizeTimeout)
       if (animationFrameId) {
         window.cancelAnimationFrame(animationFrameId)
       }
@@ -758,7 +781,7 @@ export default function Home() {
               <a href="https://github.com/jreverett" target="_blank" rel="noreferrer" data-splash="link">
                 GitHub
               </a>
-              <a href="/cv.pdf" className="cv-link" data-splash="link">
+              <a href="/cv.pdf" className="cv-link" target="_blank" rel="noreferrer" data-splash="link">
                 View CV
               </a>
             </div>
@@ -964,7 +987,7 @@ export default function Home() {
               <a href="https://github.com/jreverett" target="_blank" rel="noreferrer" data-splash="link">
                 GitHub
               </a>
-              <a href="/cv.pdf" data-splash="link">
+              <a href="/cv.pdf" target="_blank" rel="noreferrer" data-splash="link">
                 View CV
               </a>
             </div>
