@@ -79,10 +79,78 @@ export default function Home() {
       precision highp float;
       uniform sampler2D uTexture;
       uniform float uOpacity;
+      uniform vec4 uButtonBounds; // x: left, y: top, z: right, w: bottom
+      uniform vec2 uCanvasSize; // canvas width and height in pixels
+      uniform float uButtonRadius; // border radius in pixels
+      uniform bool uHasButton;
       varying vec2 vUv;
+
+      bool isInsideRoundedRect(vec2 pos, vec4 bounds, float radius) {
+        // Convert from UV space to pixel space for accurate radius calculation
+        vec2 pixelPos = pos * uCanvasSize;
+        vec4 pixelBounds = vec4(
+          bounds.x * uCanvasSize.x,
+          bounds.y * uCanvasSize.y,
+          bounds.z * uCanvasSize.x,
+          bounds.w * uCanvasSize.y
+        );
+
+        // Check if outside the bounding box
+        if (pixelPos.x < pixelBounds.x || pixelPos.x > pixelBounds.z ||
+            pixelPos.y < pixelBounds.y || pixelPos.y > pixelBounds.w) {
+          return false;
+        }
+
+        // Check corners with rounded radius
+        float left = pixelBounds.x + radius;
+        float right = pixelBounds.z - radius;
+        float top = pixelBounds.y + radius;
+        float bottom = pixelBounds.w - radius;
+
+        // Inside the non-rounded area
+        if (pixelPos.x >= left && pixelPos.x <= right) return true;
+        if (pixelPos.y >= top && pixelPos.y <= bottom) return true;
+
+        // Check rounded corners
+        vec2 cornerDist;
+
+        // Top-left corner
+        if (pixelPos.x < left && pixelPos.y < top) {
+          cornerDist = pixelPos - vec2(left, top);
+          return length(cornerDist) <= radius;
+        }
+        // Top-right corner
+        if (pixelPos.x > right && pixelPos.y < top) {
+          cornerDist = pixelPos - vec2(right, top);
+          return length(cornerDist) <= radius;
+        }
+        // Bottom-left corner
+        if (pixelPos.x < left && pixelPos.y > bottom) {
+          cornerDist = pixelPos - vec2(left, bottom);
+          return length(cornerDist) <= radius;
+        }
+        // Bottom-right corner
+        if (pixelPos.x > right && pixelPos.y > bottom) {
+          cornerDist = pixelPos - vec2(right, bottom);
+          return length(cornerDist) <= radius;
+        }
+
+        return true;
+      }
 
       void main () {
         vec3 c = texture2D(uTexture, vUv).rgb;
+
+        // Check if current pixel is within CV button bounds (with rounded corners)
+        if (uHasButton && isInsideRoundedRect(vUv, uButtonBounds, uButtonRadius)) {
+          // Convert to gold/yellow color while preserving intensity
+          float intensity = length(c);
+          if (intensity > 0.01) {
+            vec3 gold = vec3(1.0, 0.85, 0.2);
+            c = gold * intensity * 1.5;
+          }
+        }
+
         gl_FragColor = vec4(c * uOpacity, 1.0);
       }
     `
@@ -526,6 +594,29 @@ export default function Home() {
       gl.useProgram(programs.display.program)
       gl.uniform1i(programs.display.uniforms.uTexture, dye.read.attach(0))
       gl.uniform1f(programs.display.uniforms.uOpacity, 1.0)
+      gl.uniform2f(programs.display.uniforms.uCanvasSize, canvas.width, canvas.height)
+
+      // Get CV button bounds for yellow tinting
+      const cvButton = document.querySelector('.cv-link')
+      if (cvButton) {
+        const rect = cvButton.getBoundingClientRect()
+        // Convert to normalized coordinates (0-1) where y=0 is bottom
+        const left = rect.left / canvas.width
+        const right = rect.right / canvas.width
+        const top = (canvas.height - rect.bottom) / canvas.height
+        const bottom = (canvas.height - rect.top) / canvas.height
+
+        // Get computed border radius (8px from CSS)
+        const style = window.getComputedStyle(cvButton)
+        const borderRadius = parseFloat(style.borderRadius) || 8
+
+        gl.uniform4f(programs.display.uniforms.uButtonBounds, left, top, right, bottom)
+        gl.uniform1f(programs.display.uniforms.uButtonRadius, borderRadius)
+        gl.uniform1i(programs.display.uniforms.uHasButton, 1)
+      } else {
+        gl.uniform1i(programs.display.uniforms.uHasButton, 0)
+      }
+
       blit(null)
     }
 
