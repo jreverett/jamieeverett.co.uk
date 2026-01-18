@@ -9,10 +9,13 @@
   ],
   "scripts": {
     "develop": "gatsby develop",
+    "develop:mobile": "gatsby develop -H 0.0.0.0",
     "start": "gatsby develop",
-    "build": "gatsby build",
+    "build": "npm run lint && gatsby build",
     "serve": "gatsby serve",
-    "clean": "gatsby clean"
+    "clean": "gatsby clean",
+    "lint": "eslint --ext .js,.jsx src/",
+    "lint:fix": "eslint --ext .js,.jsx src/ --fix"
   },
   "dependencies": {
     "gatsby": "^5.14.0",
@@ -27,6 +30,6 @@
     "react-icons": "^5.4.0"
   },
   "engines": {
-    "node": "20.x"
+    "node": "24.x"
   }
 }

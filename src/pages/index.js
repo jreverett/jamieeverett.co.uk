@@ -79,10 +79,78 @@ export default function Home() {
       precision highp float;
       uniform sampler2D uTexture;
       uniform float uOpacity;
+      uniform vec4 uButtonBounds; // x: left, y: top, z: right, w: bottom
+      uniform vec2 uCanvasSize; // canvas width and height in pixels
+      uniform float uButtonRadius; // border radius in pixels
+      uniform bool uHasButton;
       varying vec2 vUv;
+
+      bool isInsideRoundedRect(vec2 pos, vec4 bounds, float radius) {
+        // Convert from UV space to pixel space for accurate radius calculation
+        vec2 pixelPos = pos * uCanvasSize;
+        vec4 pixelBounds = vec4(
+          bounds.x * uCanvasSize.x,
+          bounds.y * uCanvasSize.y,
+          bounds.z * uCanvasSize.x,
+          bounds.w * uCanvasSize.y
+        );
+
+        // Check if outside the bounding box
+        if (pixelPos.x < pixelBounds.x || pixelPos.x > pixelBounds.z ||
+            pixelPos.y < pixelBounds.y || pixelPos.y > pixelBounds.w) {
+          return false;
+        }
+
+        // Check corners with rounded radius
+        float left = pixelBounds.x + radius;
+        float right = pixelBounds.z - radius;
+        float top = pixelBounds.y + radius;
+        float bottom = pixelBounds.w - radius;
+
+        // Inside the non-rounded area
+        if (pixelPos.x >= left && pixelPos.x <= right) return true;
+        if (pixelPos.y >= top && pixelPos.y <= bottom) return true;
+
+        // Check rounded corners
+        vec2 cornerDist;
+
+        // Top-left corner
+        if (pixelPos.x < left && pixelPos.y < top) {
+          cornerDist = pixelPos - vec2(left, top);
+          return length(cornerDist) <= radius;
+        }
+        // Top-right corner
+        if (pixelPos.x > right && pixelPos.y < top) {
+          cornerDist = pixelPos - vec2(right, top);
+          return length(cornerDist) <= radius;
+        }
+        // Bottom-left corner
+        if (pixelPos.x < left && pixelPos.y > bottom) {
+          cornerDist = pixelPos - vec2(left, bottom);
+          return length(cornerDist) <= radius;
+        }
+        // Bottom-right corner
+        if (pixelPos.x > right && pixelPos.y > bottom) {
+          cornerDist = pixelPos - vec2(right, bottom);
+          return length(cornerDist) <= radius;
+        }
+
+        return true;
+      }
 
       void main () {
         vec3 c = texture2D(uTexture, vUv).rgb;
+
+        // Check if current pixel is within CV button bounds (with rounded corners)
+        if (uHasButton && isInsideRoundedRect(vUv, uButtonBounds, uButtonRadius)) {
+          // Convert to gold/yellow color while preserving intensity
+          float intensity = length(c);
+          if (intensity > 0.01) {
+            vec3 gold = vec3(1.0, 0.85, 0.2);
+            c = gold * intensity * 1.5;
+          }
+        }
+
         gl_FragColor = vec4(c * uOpacity, 1.0);
       }
     `
@@ -526,11 +594,35 @@ export default function Home() {
       gl.useProgram(programs.display.program)
       gl.uniform1i(programs.display.uniforms.uTexture, dye.read.attach(0))
       gl.uniform1f(programs.display.uniforms.uOpacity, 1.0)
+      gl.uniform2f(programs.display.uniforms.uCanvasSize, canvas.width, canvas.height)
+
+      // Get CV button bounds for yellow tinting
+      const cvButton = document.querySelector('.cv-link')
+      if (cvButton) {
+        const rect = cvButton.getBoundingClientRect()
+        // Convert to normalized coordinates (0-1) where y=0 is bottom
+        const left = rect.left / canvas.width
+        const right = rect.right / canvas.width
+        const top = (canvas.height - rect.bottom) / canvas.height
+        const bottom = (canvas.height - rect.top) / canvas.height
+
+        // Get computed border radius (8px from CSS)
+        const style = window.getComputedStyle(cvButton)
+        const borderRadius = parseFloat(style.borderRadius) || 8
+
+        gl.uniform4f(programs.display.uniforms.uButtonBounds, left, top, right, bottom)
+        gl.uniform1f(programs.display.uniforms.uButtonRadius, borderRadius)
+        gl.uniform1i(programs.display.uniforms.uHasButton, 1)
+      } else {
+        gl.uniform1i(programs.display.uniforms.uHasButton, 0)
+      }
+
       blit(null)
     }
 
     const pointers = []
     let lastTime = Date.now()
+    let mouseStartedOnBackground = false
 
     const updatePointerPos = (pointer, x, y) => {
       pointer.prevX = pointer.x
@@ -565,11 +657,30 @@ export default function Home() {
       return false
     }
 
+    const isTextElement = element => {
+      if (!element) return false
+      // Check if element or ancestors contain direct text
+      const textTags = ['P', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'SPAN', 'LI', 'A', 'LABEL']
+      if (textTags.includes(element.tagName)) return true
+      if (element.closest('p, h1, h2, h3, h4, h5, h6, span, li, a, label')) return true
+      return false
+    }
+
     const handleMouseDown = event => {
+      const clickedOnText = isTextElement(event.target)
+      mouseStartedOnBackground = !clickedOnText && !isInteractiveElement(event.target)
+
       if (isInteractiveElement(event.target)) return
       const pointer = pointers[0]
       pointer.down = true
       updatePointerPos(pointer, event.clientX, event.clientY)
+
+      // Prevent text selection if starting on background (not on text)
+      if (mouseStartedOnBackground) {
+        document.body.classList.add('no-select')
+        // Clear any existing text selection
+        window.getSelection()?.removeAllRanges()
+      }
     }
 
     const handleMouseMove = event => {
@@ -582,6 +693,8 @@ export default function Home() {
 
     const handleMouseUp = () => {
       pointers[0].down = false
+      mouseStartedOnBackground = false
+      document.body.classList.remove('no-select')
     }
 
     const handleTouchStart = event => {
@@ -652,13 +765,54 @@ export default function Home() {
     const cards = document.querySelectorAll(".section-card")
     cards.forEach(card => observer.observe(card))
 
+    let animationFrameId
+    let resizeTimeout
+    let lastWidth = window.innerWidth
+    let lastHeight = window.innerHeight
+
     const resize = () => {
-      canvas.width = window.innerWidth
-      canvas.height = window.innerHeight
-      initFluid()
+      const newWidth = window.innerWidth
+      const newHeight = window.innerHeight
+
+      // Calculate changes
+      const widthChanged = Math.abs(newWidth - lastWidth) > 1
+      const heightDiff = Math.abs(newHeight - lastHeight)
+
+      // Ignore small height-only changes (mobile address bar show/hide)
+      // These typically cause 50-100px height changes but no width change
+      const isMobileAddressBarChange = !widthChanged && heightDiff > 0 && heightDiff < 150
+
+      if (isMobileAddressBarChange) {
+        // Don't resize at all - this preserves the splashes
+        return
+      }
+
+      // For real resize events, update canvas and reinitialize
+      if (widthChanged || heightDiff > 0) {
+        canvas.width = newWidth
+        canvas.height = newHeight
+        lastWidth = newWidth
+        lastHeight = newHeight
+        initFluid()
+      }
     }
 
-    let animationFrameId
+    const debouncedResize = () => {
+      clearTimeout(resizeTimeout)
+      resizeTimeout = setTimeout(resize, 150)
+    }
+
+    const handleContextLost = (event) => {
+      event.preventDefault()
+      if (animationFrameId) {
+        window.cancelAnimationFrame(animationFrameId)
+      }
+    }
+
+    const handleContextRestored = () => {
+      initFluid()
+      animate()
+    }
     const animate = () => {
       const now = Date.now()
       const dt = Math.min((now - lastTime) / 1000, 0.016)
@@ -716,7 +870,9 @@ export default function Home() {
     document.addEventListener("touchmove", handleTouchMove, { passive: true })
     document.addEventListener("touchend", handleTouchEnd, { passive: true })
     document.addEventListener("click", handleClick)
-    window.addEventListener("resize", resize)
+    window.addEventListener("resize", debouncedResize)
+    canvas.addEventListener("webglcontextlost", handleContextLost, false)
+    canvas.addEventListener("webglcontextrestored", handleContextRestored, false)
 
     initFluid()
     animate()
@@ -729,8 +885,12 @@ export default function Home() {
       document.removeEventListener("touchmove", handleTouchMove)
       document.removeEventListener("touchend", handleTouchEnd)
       document.removeEventListener("click", handleClick)
-      window.removeEventListener("resize", resize)
+      window.removeEventListener("resize", debouncedResize)
+      canvas.removeEventListener("webglcontextlost", handleContextLost)
+      canvas.removeEventListener("webglcontextrestored", handleContextRestored)
       observer.disconnect()
+      clearTimeout(resizeTimeout)
+      document.body.classList.remove('no-select')
       if (animationFrameId) {
         window.cancelAnimationFrame(animationFrameId)
       }
@@ -758,7 +918,7 @@ export default function Home() {
               <a href="https://github.com/jreverett" target="_blank" rel="noreferrer" data-splash="link">
                 GitHub
               </a>
-              <a href="/cv.pdf" className="cv-link" data-splash="link">
+              <a href="/cv.pdf" className="cv-link" target="_blank" rel="noreferrer" data-splash="link">
                 View CV
               </a>
             </div>
@@ -964,7 +1124,7 @@ export default function Home() {
               <a href="https://github.com/jreverett" target="_blank" rel="noreferrer" data-splash="link">
                 GitHub
               </a>
-              <a href="/cv.pdf" data-splash="link">
+              <a href="/cv.pdf" target="_blank" rel="noreferrer" data-splash="link">
                 View CV
               </a>
             </div>
