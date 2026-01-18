@@ -1,0 +1,14 @@
+{
+  "extends": ["react-app"],
+  "rules": {
+    "no-console": ["warn", { "allow": ["warn", "error"] }],
+    "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+    "react/prop-types": "off"
+  },
+  "ignorePatterns": [
+    "node_modules/",
+    "public/",
+    ".cache/",
+    "build/"
+  ]
+}
