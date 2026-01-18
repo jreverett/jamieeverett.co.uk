@@ -4,3 +4,8 @@
 html * {
   min-height: 0vw; /* safari needs this for calc, clamp, etc. to work */
 }
+
+html,
+body {
+  overscroll-behavior: none;
+}

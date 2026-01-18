@@ -900,7 +900,7 @@ export default function Home() {
   return (
     <>
       {/* eslint-disable-next-line react/jsx-pascal-case */}
-      <SEO title="Jamie Everett - Software Engineering Manager" />
+      <SEO title="Jamie Everett" />
       <canvas id="fluid-canvas" ref={canvasRef} />
       <div className="content">
         <section className="hero">
