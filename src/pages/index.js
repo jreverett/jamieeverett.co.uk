@@ -531,6 +531,7 @@ export default function Home() {
 
     const pointers = []
     let lastTime = Date.now()
+    let mouseStartedOnBackground = false
 
     const updatePointerPos = (pointer, x, y) => {
       pointer.prevX = pointer.x
@@ -565,11 +566,30 @@ export default function Home() {
       return false
     }
 
+    const isTextElement = element => {
+      if (!element) return false
+      // Check if element or ancestors contain direct text
+      const textTags = ['P', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'SPAN', 'LI', 'A', 'LABEL']
+      if (textTags.includes(element.tagName)) return true
+      if (element.closest('p, h1, h2, h3, h4, h5, h6, span, li, a, label')) return true
+      return false
+    }
+
     const handleMouseDown = event => {
+      const clickedOnText = isTextElement(event.target)
+      mouseStartedOnBackground = !clickedOnText && !isInteractiveElement(event.target)
+
       if (isInteractiveElement(event.target)) return
       const pointer = pointers[0]
       pointer.down = true
       updatePointerPos(pointer, event.clientX, event.clientY)
+
+      // Prevent text selection if starting on background (not on text)
+      if (mouseStartedOnBackground) {
+        document.body.classList.add('no-select')
+        // Clear any existing text selection
+        window.getSelection()?.removeAllRanges()
+      }
     }
 
     const handleMouseMove = event => {
@@ -582,6 +602,8 @@ export default function Home() {
 
     const handleMouseUp = () => {
       pointers[0].down = false
+      mouseStartedOnBackground = false
+      document.body.classList.remove('no-select')
     }
 
     const handleTouchStart = event => {
@@ -777,6 +799,7 @@ export default function Home() {
       canvas.removeEventListener("webglcontextrestored", handleContextRestored)
       observer.disconnect()
       clearTimeout(resizeTimeout)
+      document.body.classList.remove('no-select')
       if (animationFrameId) {
         window.cancelAnimationFrame(animationFrameId)
       }
