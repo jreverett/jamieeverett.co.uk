@@ -20,12 +20,11 @@ module.exports = {
         tags: ["ReactJS", "Gatsby", "GraphQL"],
       },
       {
-        name: "Upvent",
-        imageName: "upvent",
-        sourceUrl: "https://github.com/jreverett/FinalYearProject",
-        CIUrl: "https://dev.azure.com/jamieeverett0462/PRCO304-Upvent/_build",
-        CDUrl: "https://upvent-app.herokuapp.com",
-        tags: ["ReactJS", "NodeJS", "ExpressJS", "MongoDB", "JWT", "Jest"],
+        name: "everetteats.co.uk",
+        imageName: "everetteats",
+        sourceUrl: "https://github.com/jreverett/EverettEats",
+        CDUrl: "https://everetteats.co.uk",
+        tags: [".NET 8", "Blazor Server", "C#"],
       },
       {
         name: "Pictionary",
@@ -78,6 +77,9 @@ module.exports = {
       { name: "Chai", url: "https://www.chaijs.com" },
       { name: "C++", url: "https://en.wikipedia.org/wiki/C%2B%2B" },
       { name: "OpenGL", url: "https://www.opengl.org" },
+      { name: ".NET 8", url: "https://dotnet.microsoft.com/" },
+      { name: "Blazor Server", url: "https://dotnet.microsoft.com/apps/aspnet/web-apps/blazor" },
+      { name: "C#", url: "https://learn.microsoft.com/en-us/dotnet/csharp/" },
     ],
   },
   plugins: [

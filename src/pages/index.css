@@ -480,12 +480,24 @@ section {
   border-radius: 12px;
   padding: 1.5rem;
   transition: all 0.3s ease;
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+a.project-card {
+  border-bottom: 1px solid rgba(0, 212, 212, 0.1);
 }
 
 .project-card:hover {
   border-color: rgba(0, 212, 212, 0.3);
   transform: translateY(-3px);
   box-shadow: 0 10px 40px rgba(0, 212, 212, 0.1);
+  cursor: pointer;
+}
+
+a.project-card:hover {
+  border-bottom-color: rgba(0, 212, 212, 0.3);
 }
 
 .project-card h3 {

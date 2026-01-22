@@ -1099,16 +1099,15 @@ export default function Home() {
                   <span>Netlify</span>
                 </div>
               </div>
-              <div className="project-card">
-                <h3>Upvent</h3>
-                <p>Event management system with real-time notifications and subscription features.</p>
+              <a href="https://everetteats.co.uk" target="_blank" rel="noreferrer" className="project-card" data-splash="link">
+                <h3>everetteats.co.uk</h3>
+                <p>Personal recipe website with filterable search and mobile-optimized design.</p>
                 <div className="project-tech">
-                  <span>React</span>
-                  <span>Node.js</span>
-                  <span>MongoDB</span>
-                  <span>Express</span>
+                  <span>.NET 8</span>
+                  <span>Blazor Server</span>
+                  <span>C#</span>
                 </div>
-              </div>
+              </a>
             </div>
           </div>
         </section>
