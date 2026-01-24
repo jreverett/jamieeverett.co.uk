@@ -10,6 +10,7 @@ export default function SEO({
   meta,
   image: metaImage,
   pathname,
+  titleTemplate = true,
 }) {
   const { site } = useStaticQuery(graphql`
     query {
@@ -41,7 +42,7 @@ export default function SEO({
   return (
     <Helmet
       title={title}
-      titleTemplate={`%s | ${defaultTitle}`}
+      titleTemplate={titleTemplate ? `%s | ${defaultTitle}` : null}
       link={canonical ? [{ rel: "canonical", href: canonical }] : []}
       htmlAttributes={{ lang }}
       meta={[
@@ -75,4 +76,5 @@ SEO.propTypes = {
   meta: PropTypes.arrayOf(PropTypes.object),
   image: PropTypes.string,
   pathname: PropTypes.string,
+  titleTemplate: PropTypes.bool,
 }

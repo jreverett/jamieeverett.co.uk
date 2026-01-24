@@ -8,6 +8,7 @@ import Skills from "./Skills/Skills.jsx"
 import Projects from "./Projects/Projects.jsx"
 import ProjectTile from "./ProjectTile/ProjectTile.jsx"
 import ScrollTop from "./ScrollTop/ScrollTop.jsx"
+import FluidBackground from "./FluidBackground/FluidBackground.jsx"
 
 export {
   BackgroundLayout,
@@ -20,4 +21,5 @@ export {
   Projects,
   ProjectTile,
   ScrollTop,
+  FluidBackground,
 }
