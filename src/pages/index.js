@@ -82,6 +82,7 @@ export default function Home() {
       uniform vec4 uButtonBounds; // x: left, y: top, z: right, w: bottom
       uniform vec2 uCanvasSize; // canvas width and height in pixels
       uniform float uButtonRadius; // border radius in pixels
+      uniform float uButtonOpacity; // opacity for smooth fade during scroll
       uniform bool uHasButton;
       varying vec2 vUv;
 
@@ -142,12 +143,14 @@ export default function Home() {
         vec3 c = texture2D(uTexture, vUv).rgb;
 
         // Check if current pixel is within CV button bounds (with rounded corners)
-        if (uHasButton && isInsideRoundedRect(vUv, uButtonBounds, uButtonRadius)) {
+        if (uHasButton && uButtonOpacity > 0.0 && isInsideRoundedRect(vUv, uButtonBounds, uButtonRadius)) {
           // Convert to gold/yellow color while preserving intensity
           float intensity = length(c);
           if (intensity > 0.01) {
             vec3 gold = vec3(1.0, 0.85, 0.2);
-            c = gold * intensity * 1.5;
+            vec3 tinted = gold * intensity * 1.5;
+            // Blend between original and tinted based on button opacity
+            c = mix(c, tinted, uButtonOpacity);
           }
         }
 
@@ -414,6 +417,31 @@ export default function Home() {
     let pressure
     let dye
 
+    // Cache CV button position relative to document (not viewport)
+    // This avoids getBoundingClientRect() lag during scroll
+    let cvButtonDocPos = null
+
+    // Scroll state for fading button overlay
+    let isScrolling = false
+    let scrollTimeout = null
+    let buttonOpacity = 1.0
+    let targetButtonOpacity = 1.0
+
+    const updateCvButtonPosition = () => {
+      const cvButton = document.querySelector('.cv-link')
+      if (cvButton) {
+        const rect = cvButton.getBoundingClientRect()
+        const scrollY = window.scrollY || window.pageYOffset
+        cvButtonDocPos = {
+          left: rect.left,
+          right: rect.right,
+          top: rect.top + scrollY,
+          bottom: rect.bottom + scrollY,
+          borderRadius: parseFloat(window.getComputedStyle(cvButton).borderRadius) || 8
+        }
+      }
+    }
+
     const initFluid = () => {
       canvas.width = canvas.clientWidth
       canvas.height = canvas.clientHeight
@@ -591,28 +619,35 @@ export default function Home() {
     }
 
     const render = () => {
+      // Smoothly interpolate button opacity
+      buttonOpacity += (targetButtonOpacity - buttonOpacity) * 0.15
+
       gl.useProgram(programs.display.program)
       gl.uniform1i(programs.display.uniforms.uTexture, dye.read.attach(0))
       gl.uniform1f(programs.display.uniforms.uOpacity, 1.0)
-      gl.uniform2f(programs.display.uniforms.uCanvasSize, canvas.width, canvas.height)
+      gl.uniform2f(programs.display.uniforms.uCanvasSize, canvas.clientWidth, canvas.clientHeight)
+      gl.uniform1f(programs.display.uniforms.uButtonOpacity, buttonOpacity)
 
-      // Get CV button bounds for yellow tinting
-      const cvButton = document.querySelector('.cv-link')
-      if (cvButton) {
-        const rect = cvButton.getBoundingClientRect()
-        // Convert to normalized coordinates (0-1) where y=0 is bottom
-        const left = rect.left / canvas.width
-        const right = rect.right / canvas.width
-        const top = (canvas.height - rect.bottom) / canvas.height
-        const bottom = (canvas.height - rect.top) / canvas.height
+      // Use cached button position to avoid getBoundingClientRect() lag during scroll
+      if (cvButtonDocPos) {
+        const scrollY = window.scrollY || window.pageYOffset
+        // Calculate viewport position from cached document position
+        const viewportTop = cvButtonDocPos.top - scrollY
+        const viewportBottom = cvButtonDocPos.bottom - scrollY
 
-        // Get computed border radius (8px from CSS)
-        const style = window.getComputedStyle(cvButton)
-        const borderRadius = parseFloat(style.borderRadius) || 8
+        // Only render overlay if button is in viewport
+        if (viewportBottom > 0 && viewportTop < canvas.clientHeight) {
+          const left = cvButtonDocPos.left / canvas.clientWidth
+          const right = cvButtonDocPos.right / canvas.clientWidth
+          const top = (canvas.clientHeight - viewportBottom) / canvas.clientHeight
+          const bottom = (canvas.clientHeight - viewportTop) / canvas.clientHeight
 
-        gl.uniform4f(programs.display.uniforms.uButtonBounds, left, top, right, bottom)
-        gl.uniform1f(programs.display.uniforms.uButtonRadius, borderRadius)
-        gl.uniform1i(programs.display.uniforms.uHasButton, 1)
+          gl.uniform4f(programs.display.uniforms.uButtonBounds, left, top, right, bottom)
+          gl.uniform1f(programs.display.uniforms.uButtonRadius, cvButtonDocPos.borderRadius)
+          gl.uniform1i(programs.display.uniforms.uHasButton, 1)
+        } else {
+          gl.uniform1i(programs.display.uniforms.uHasButton, 0)
+        }
       } else {
         gl.uniform1i(programs.display.uniforms.uHasButton, 0)
       }
@@ -794,6 +829,7 @@ export default function Home() {
         lastWidth = newWidth
         lastHeight = newHeight
         initFluid()
+        updateCvButtonPosition()
       }
     }
 
@@ -811,6 +847,7 @@ export default function Home() {
 
     const handleContextRestored = () => {
       initFluid()
+      updateCvButtonPosition()
       animate()
     }
     const animate = () => {
@@ -863,6 +900,23 @@ export default function Home() {
       animationFrameId = window.requestAnimationFrame(animate)
     }
 
+    const handleScroll = () => {
+      // Fade out button overlay while scrolling
+      targetButtonOpacity = 0
+      isScrolling = true
+
+      // Clear existing timeout
+      if (scrollTimeout) {
+        clearTimeout(scrollTimeout)
+      }
+
+      // Fade back in after scrolling stops
+      scrollTimeout = setTimeout(() => {
+        isScrolling = false
+        targetButtonOpacity = 1
+      }, 300)
+    }
+
     document.addEventListener("mousedown", handleMouseDown)
     document.addEventListener("mousemove", handleMouseMove)
     document.addEventListener("mouseup", handleMouseUp)
@@ -870,11 +924,13 @@ export default function Home() {
     document.addEventListener("touchmove", handleTouchMove, { passive: true })
     document.addEventListener("touchend", handleTouchEnd, { passive: true })
     document.addEventListener("click", handleClick)
+    window.addEventListener("scroll", handleScroll, { passive: true })
     window.addEventListener("resize", debouncedResize)
     canvas.addEventListener("webglcontextlost", handleContextLost, false)
     canvas.addEventListener("webglcontextrestored", handleContextRestored, false)
 
     initFluid()
+    updateCvButtonPosition()
     animate()
 
     return () => {
@@ -885,7 +941,11 @@ export default function Home() {
       document.removeEventListener("touchmove", handleTouchMove)
       document.removeEventListener("touchend", handleTouchEnd)
       document.removeEventListener("click", handleClick)
+      window.removeEventListener("scroll", handleScroll)
       window.removeEventListener("resize", debouncedResize)
+      if (scrollTimeout) {
+        clearTimeout(scrollTimeout)
+      }
       canvas.removeEventListener("webglcontextlost", handleContextLost)
       canvas.removeEventListener("webglcontextrestored", handleContextRestored)
       observer.disconnect()
