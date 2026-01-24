@@ -1,8 +1,6 @@
 import React, { useEffect, useRef } from "react"
-import SEO from "../components/SEO/SEO.jsx"
-import "./index.css"
 
-export default function Home() {
+export default function FluidBackground() {
   const canvasRef = useRef(null)
 
   useEffect(() => {
@@ -53,7 +51,7 @@ export default function Home() {
       varying vec2 vT;
       varying vec2 vB;
       uniform vec2 texelSize;
-      
+
       void main () {
         vUv = aPosition * 0.5 + 0.5;
         vL = vUv - vec2(texelSize.x, 0.0);
@@ -69,7 +67,7 @@ export default function Home() {
       uniform sampler2D uTexture;
       uniform float value;
       varying vec2 vUv;
-      
+
       void main () {
         gl_FragColor = value * texture2D(uTexture, vUv);
       }
@@ -79,78 +77,10 @@ export default function Home() {
       precision highp float;
       uniform sampler2D uTexture;
       uniform float uOpacity;
-      uniform vec4 uButtonBounds; // x: left, y: top, z: right, w: bottom
-      uniform vec2 uCanvasSize; // canvas width and height in pixels
-      uniform float uButtonRadius; // border radius in pixels
-      uniform bool uHasButton;
       varying vec2 vUv;
-
-      bool isInsideRoundedRect(vec2 pos, vec4 bounds, float radius) {
-        // Convert from UV space to pixel space for accurate radius calculation
-        vec2 pixelPos = pos * uCanvasSize;
-        vec4 pixelBounds = vec4(
-          bounds.x * uCanvasSize.x,
-          bounds.y * uCanvasSize.y,
-          bounds.z * uCanvasSize.x,
-          bounds.w * uCanvasSize.y
-        );
-
-        // Check if outside the bounding box
-        if (pixelPos.x < pixelBounds.x || pixelPos.x > pixelBounds.z ||
-            pixelPos.y < pixelBounds.y || pixelPos.y > pixelBounds.w) {
-          return false;
-        }
-
-        // Check corners with rounded radius
-        float left = pixelBounds.x + radius;
-        float right = pixelBounds.z - radius;
-        float top = pixelBounds.y + radius;
-        float bottom = pixelBounds.w - radius;
-
-        // Inside the non-rounded area
-        if (pixelPos.x >= left && pixelPos.x <= right) return true;
-        if (pixelPos.y >= top && pixelPos.y <= bottom) return true;
-
-        // Check rounded corners
-        vec2 cornerDist;
-
-        // Top-left corner
-        if (pixelPos.x < left && pixelPos.y < top) {
-          cornerDist = pixelPos - vec2(left, top);
-          return length(cornerDist) <= radius;
-        }
-        // Top-right corner
-        if (pixelPos.x > right && pixelPos.y < top) {
-          cornerDist = pixelPos - vec2(right, top);
-          return length(cornerDist) <= radius;
-        }
-        // Bottom-left corner
-        if (pixelPos.x < left && pixelPos.y > bottom) {
-          cornerDist = pixelPos - vec2(left, bottom);
-          return length(cornerDist) <= radius;
-        }
-        // Bottom-right corner
-        if (pixelPos.x > right && pixelPos.y > bottom) {
-          cornerDist = pixelPos - vec2(right, bottom);
-          return length(cornerDist) <= radius;
-        }
-
-        return true;
-      }
 
       void main () {
         vec3 c = texture2D(uTexture, vUv).rgb;
-
-        // Check if current pixel is within CV button bounds (with rounded corners)
-        if (uHasButton && isInsideRoundedRect(vUv, uButtonBounds, uButtonRadius)) {
-          // Convert to gold/yellow color while preserving intensity
-          float intensity = length(c);
-          if (intensity > 0.01) {
-            vec3 gold = vec3(1.0, 0.85, 0.2);
-            c = gold * intensity * 1.5;
-          }
-        }
-
         gl_FragColor = vec4(c * uOpacity, 1.0);
       }
     `
@@ -163,7 +93,7 @@ export default function Home() {
       uniform vec2 point;
       uniform float radius;
       varying vec2 vUv;
-      
+
       void main () {
         vec2 p = vUv - point.xy;
         p.x *= aspectRatio;
@@ -181,7 +111,7 @@ export default function Home() {
       uniform float dt;
       uniform float dissipation;
       varying vec2 vUv;
-      
+
       void main () {
         vec2 coord = vUv - dt * texture2D(uVelocity, vUv).xy * texelSize;
         vec3 result = dissipation * texture2D(uSource, coord).xyz;
@@ -197,7 +127,7 @@ export default function Home() {
       varying vec2 vR;
       varying vec2 vT;
       varying vec2 vB;
-      
+
       void main () {
         float L = texture2D(uVelocity, vL).x;
         float R = texture2D(uVelocity, vR).x;
@@ -216,7 +146,7 @@ export default function Home() {
       varying vec2 vR;
       varying vec2 vT;
       varying vec2 vB;
-      
+
       void main () {
         float L = texture2D(uVelocity, vL).y;
         float R = texture2D(uVelocity, vR).y;
@@ -238,19 +168,19 @@ export default function Home() {
       varying vec2 vR;
       varying vec2 vT;
       varying vec2 vB;
-      
+
       void main () {
         float L = texture2D(uCurl, vL).x;
         float R = texture2D(uCurl, vR).x;
         float T = texture2D(uCurl, vT).x;
         float B = texture2D(uCurl, vB).x;
         float C = texture2D(uCurl, vUv).x;
-        
+
         vec2 force = 0.5 * vec2(abs(T) - abs(B), abs(R) - abs(L));
         force /= length(force) + 0.0001;
         force *= curl * C;
         force.y *= -1.0;
-        
+
         vec2 vel = texture2D(uVelocity, vUv).xy;
         gl_FragColor = vec4(vel + force * dt, 0.0, 1.0);
       }
@@ -265,7 +195,7 @@ export default function Home() {
       varying vec2 vR;
       varying vec2 vT;
       varying vec2 vB;
-      
+
       void main () {
         float L = texture2D(uPressure, vL).x;
         float R = texture2D(uPressure, vR).x;
@@ -287,7 +217,7 @@ export default function Home() {
       varying vec2 vR;
       varying vec2 vT;
       varying vec2 vB;
-      
+
       void main () {
         float L = texture2D(uPressure, vL).x;
         float R = texture2D(uPressure, vR).x;
@@ -594,29 +524,6 @@ export default function Home() {
       gl.useProgram(programs.display.program)
       gl.uniform1i(programs.display.uniforms.uTexture, dye.read.attach(0))
       gl.uniform1f(programs.display.uniforms.uOpacity, 1.0)
-      gl.uniform2f(programs.display.uniforms.uCanvasSize, canvas.width, canvas.height)
-
-      // Get CV button bounds for yellow tinting
-      const cvButton = document.querySelector('.cv-link')
-      if (cvButton) {
-        const rect = cvButton.getBoundingClientRect()
-        // Convert to normalized coordinates (0-1) where y=0 is bottom
-        const left = rect.left / canvas.width
-        const right = rect.right / canvas.width
-        const top = (canvas.height - rect.bottom) / canvas.height
-        const bottom = (canvas.height - rect.top) / canvas.height
-
-        // Get computed border radius (8px from CSS)
-        const style = window.getComputedStyle(cvButton)
-        const borderRadius = parseFloat(style.borderRadius) || 8
-
-        gl.uniform4f(programs.display.uniforms.uButtonBounds, left, top, right, bottom)
-        gl.uniform1f(programs.display.uniforms.uButtonRadius, borderRadius)
-        gl.uniform1i(programs.display.uniforms.uHasButton, 1)
-      } else {
-        gl.uniform1i(programs.display.uniforms.uHasButton, 0)
-      }
-
       blit(null)
     }
 
@@ -659,7 +566,6 @@ export default function Home() {
 
     const isTextElement = element => {
       if (!element) return false
-      // Check if element or ancestors contain direct text
       const textTags = ['P', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'SPAN', 'LI', 'A', 'LABEL']
       if (textTags.includes(element.tagName)) return true
       if (element.closest('p, h1, h2, h3, h4, h5, h6, span, li, a, label')) return true
@@ -675,10 +581,8 @@ export default function Home() {
       pointer.down = true
       updatePointerPos(pointer, event.clientX, event.clientY)
 
-      // Prevent text selection if starting on background (not on text)
       if (mouseStartedOnBackground) {
         document.body.classList.add('no-select')
-        // Clear any existing text selection
         window.getSelection()?.removeAllRanges()
       }
     }
@@ -751,20 +655,6 @@ export default function Home() {
       }
     }
 
-    const observer = new IntersectionObserver(
-      entries => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("visible")
-          }
-        })
-      },
-      { threshold: 0.1, rootMargin: "0px 0px -50px 0px" }
-    )
-
-    const cards = document.querySelectorAll(".section-card")
-    cards.forEach(card => observer.observe(card))
-
     let animationFrameId
     let resizeTimeout
     let lastWidth = window.innerWidth
@@ -774,20 +664,15 @@ export default function Home() {
       const newWidth = window.innerWidth
       const newHeight = window.innerHeight
 
-      // Calculate changes
       const widthChanged = Math.abs(newWidth - lastWidth) > 1
       const heightDiff = Math.abs(newHeight - lastHeight)
 
-      // Ignore small height-only changes (mobile address bar show/hide)
-      // These typically cause 50-100px height changes but no width change
       const isMobileAddressBarChange = !widthChanged && heightDiff > 0 && heightDiff < 150
 
       if (isMobileAddressBarChange) {
-        // Don't resize at all - this preserves the splashes
         return
       }
 
-      // For real resize events, update canvas and reinitialize
       if (widthChanged || heightDiff > 0) {
         canvas.width = newWidth
         canvas.height = newHeight
@@ -813,6 +698,7 @@ export default function Home() {
       initFluid()
       animate()
     }
+
     const animate = () => {
       const now = Date.now()
       const dt = Math.min((now - lastTime) / 1000, 0.016)
@@ -888,7 +774,6 @@ export default function Home() {
       window.removeEventListener("resize", debouncedResize)
       canvas.removeEventListener("webglcontextlost", handleContextLost)
       canvas.removeEventListener("webglcontextrestored", handleContextRestored)
-      observer.disconnect()
       clearTimeout(resizeTimeout)
       document.body.classList.remove('no-select')
       if (animationFrameId) {
@@ -897,240 +782,5 @@ export default function Home() {
     }
   }, [])
 
-  return (
-    <>
-      {/* eslint-disable-next-line react/jsx-pascal-case */}
-      <SEO title="Jamie Everett - Portfolio" titleTemplate={false} />
-      <canvas id="fluid-canvas" ref={canvasRef} />
-      <div className="content">
-        <section className="hero">
-          <div className="hero-content">
-            <h1>Jamie Everett</h1>
-            <p className="subtitle">Software Engineering Manager</p>
-            <p className="hero-intro">
-              Building robust desktop and cloud applications with 5+ years of experience.
-              Currently focused on ultrasonic NDT monitoring systems at Inductosense.
-            </p>
-            <div className="hero-links">
-              <a href="https://linkedin.com/in/jamieeverett1" target="_blank" rel="noreferrer" data-splash="link">
-                LinkedIn
-              </a>
-              <a href="https://github.com/jreverett" target="_blank" rel="noreferrer" data-splash="link">
-                GitHub
-              </a>
-              <a href="/cv.pdf" className="cv-link" target="_blank" rel="noreferrer" data-splash="link">
-                View CV
-              </a>
-            </div>
-          </div>
-          <div className="scroll-hint">
-            <span>Scroll for more</span>
-            <div className="arrow" />
-          </div>
-        </section>
-
-        <section id="about">
-          <div className="section-card">
-            <div className="glow-line" />
-            <h2 className="section-title">About</h2>
-            <p className="section-body">
-              I&apos;m a{" "}
-              <a
-                href="https://goo.gl/maps/VbZyJHhXb4CwRYxN9"
-                target="_blank"
-                rel="noreferrer"
-              >
-                Bristol-based
-              </a>{" "}
-              software engineering manager leading the development of ultrasonic NDT monitoring
-              tools at{" "}
-              <a href="https://www.inductosense.com/" target="_blank" rel="noreferrer">
-                Inductosense
-              </a>
-              . I focus on building reliable cross-platform products that blend desktop
-              performance with cloud connectivity.
-            </p>
-            <p className="section-body">
-              I earned a first-class BSc (Hons.) in Computing from the{" "}
-              <a href="https://www.plymouth.ac.uk/" target="_blank" rel="noreferrer">
-                University of Plymouth
-              </a>{" "}
-              and have since specialised in .NET, Azure cloud services, and DevOps automation
-              that helps teams ship with confidence.
-            </p>
-            <p className="section-body">
-              As well as exploring the latest AI tools, I also enjoy baking desserts and trying new recipes.
-              I like building things that work well and taste good.
-            </p>
-            <p className="section-body">
-              You can explore more detail in my{" "}
-              <a href="/cv.pdf" target="_blank" rel="noreferrer">
-                CV
-              </a>
-              .
-            </p>
-          </div>
-        </section>
-
-        <section id="skills">
-          <div className="section-card">
-            <div className="glow-line" />
-            <h2 className="section-title">Skills</h2>
-            <div className="skills-grid">
-              <div className="skill-category">
-                <h3>Languages &amp; Frameworks</h3>
-                <ul>
-                  <li>C# / .NET 8</li>
-                  <li>MAUI Blazor Hybrid</li>
-                  <li>Entity Framework</li>
-                  <li>SignalR</li>
-                </ul>
-              </div>
-              <div className="skill-category">
-                <h3>Cloud &amp; DevOps</h3>
-                <ul>
-                  <li>Azure SQL / App Services</li>
-                  <li>Azure DevOps / CI/CD</li>
-                  <li>SQL Server</li>
-                  <li>Git</li>
-                </ul>
-              </div>
-              <div className="skill-category">
-                <h3>Practices</h3>
-                <ul>
-                  <li>System Architecture</li>
-                  <li>xUnit / TDD</li>
-                  <li>Agile / Scrum</li>
-                  <li>AI-assisted Dev</li>
-                </ul>
-              </div>
-              <div className="skill-category">
-                <h3>Leadership</h3>
-                <ul>
-                  <li>Team Management</li>
-                  <li>Technical Mentoring</li>
-                  <li>Code Review</li>
-                  <li>Project Planning</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section id="experience">
-          <div className="section-card">
-            <div className="glow-line" />
-            <h2 className="section-title">Experience</h2>
-
-            <div className="experience-item">
-              <div className="experience-header">
-                <div>
-                  <div className="experience-title">
-                    Software Engineer → Senior SE → Engineering Manager
-                  </div>
-                  <div className="experience-company">Inductosense</div>
-                </div>
-                <div className="experience-date">Nov 2023 → Present</div>
-              </div>
-              <p className="experience-desc">
-                Developing ultrasonic NDT monitoring software for oil and gas, serving 100+
-                enterprise customers.
-              </p>
-              <ul className="experience-highlights">
-                <li>Led architecture of next-gen platform with .NET MAUI Blazor Hybrid.</li>
-                <li>Designed offline-first architecture with dual sync (device↔local, local↔cloud).</li>
-                <li>Built enterprise installer with complex install/uninstall workflows.</li>
-                <li>Drove xUnit test coverage adoption for critical code paths.</li>
-                <li>Promoted through team election to manage a team of 4.</li>
-              </ul>
-            </div>
-
-            <div className="experience-item">
-              <div className="experience-header">
-                <div>
-                  <div className="experience-title">Graduate SE → Software Engineer</div>
-                  <div className="experience-company">Malvern Panalytical</div>
-                </div>
-                <div className="experience-date">Nov 2020 → Nov 2023</div>
-              </div>
-              <p className="experience-desc">
-                International leader in scientific instrumentation producing Windows-based .NET
-                desktop applications.
-              </p>
-              <ul className="experience-highlights">
-                <li>Established CI/CD infrastructure on Azure DevOps across multiple teams.</li>
-                <li>Designed and implemented automated testing frameworks.</li>
-                <li>Served as Radiation Protection Supervisor for the Bristol office.</li>
-              </ul>
-            </div>
-
-            <div className="experience-item">
-              <div className="experience-header">
-                <div>
-                  <div className="experience-title">Software Developer (Industrial Placement)</div>
-                  <div className="experience-company">BMT</div>
-                </div>
-                <div className="experience-date">Jun 2018 → Jun 2019</div>
-              </div>
-              <p className="experience-desc">
-                Year-long placement at a world-leading defence consultancy.
-              </p>
-              <ul className="experience-highlights">
-                <li>Upgraded legacy C# application for GDPR and ISO 27001 compliance.</li>
-                <li>Developed SQL scripts for Ministry of Defence data restructuring.</li>
-                <li>Prototyped a blockchain solution within one month.</li>
-              </ul>
-            </div>
-          </div>
-        </section>
-
-        <section id="projects">
-          <div className="section-card">
-            <div className="glow-line" />
-            <h2 className="section-title">Projects</h2>
-            <div className="project-grid">
-              <div className="project-card">
-                <h3>jamieeverett.co.uk</h3>
-                <p>Personal portfolio with interactive WebGL fluid simulation background.</p>
-                <div className="project-tech">
-                  <span>React</span>
-                  <span>Gatsby</span>
-                  <span>WebGL</span>
-                  <span>Netlify</span>
-                </div>
-              </div>
-              <a href="https://everetteats.co.uk" target="_blank" rel="noreferrer" className="project-card" data-splash="link">
-                <h3>everetteats.co.uk</h3>
-                <p>Personal recipe website with filterable search and mobile-optimised design.</p>
-                <div className="project-tech">
-                  <span>.NET 8</span>
-                  <span>Blazor Server</span>
-                  <span>C#</span>
-                </div>
-              </a>
-            </div>
-          </div>
-        </section>
-
-        <section id="contact">
-          <div className="section-card">
-            <div className="glow-line" />
-            <h2 className="section-title">Get in Touch</h2>
-            <div className="contact-links">
-              <a href="https://linkedin.com/in/jamieeverett1" target="_blank" rel="noreferrer" data-splash="link">
-                LinkedIn
-              </a>
-              <a href="https://github.com/jreverett" target="_blank" rel="noreferrer" data-splash="link">
-                GitHub
-              </a>
-              <a href="/cv.pdf" target="_blank" rel="noreferrer" data-splash="link">
-                View CV
-              </a>
-            </div>
-          </div>
-        </section>
-
-      </div>
-    </>
-  )
+  return <canvas id="fluid-canvas" ref={canvasRef} />
 }
