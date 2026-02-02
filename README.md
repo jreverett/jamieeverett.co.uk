@@ -8,3 +8,14 @@
 </h1>
 
 [![Netlify Status](https://api.netlify.com/api/v1/badges/956fb36f-20ea-4546-a857-1ba9234d0703/deploy-status)](https://app.netlify.com/sites/quirky-chandrasekhar-d7c462/deploys)
+
+## Local Development
+
+Requires [Node.js 24.x](https://nodejs.org/).
+
+```bash
+npm install
+npm start
+```
+
+The site will be available at `http://localhost:8000`.
