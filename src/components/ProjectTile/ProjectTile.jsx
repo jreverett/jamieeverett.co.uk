@@ -4,7 +4,7 @@ import { GatsbyImage, getImage } from "gatsby-plugin-image"
 import "./ProjectTile.css"
 
 export default function ProjectTile(props) {
-  const { projectName, projectImage, sourceUrl, CIUrl, CDUrl, tags } = props
+  const { projectName, projectImage, sourceUrl, tags } = props
   const tagUrls = props.tagUrls
   
   // Convert the image data to the new format
@@ -22,16 +22,6 @@ export default function ProjectTile(props) {
         {sourceUrl && (
           <a href={sourceUrl} target="_blank" rel="noopener noreferrer">
             Source
-          </a>
-        )}
-        {CIUrl && (
-          <a href={CIUrl} target="_blank" rel="noopener noreferrer">
-            Build
-          </a>
-        )}
-        {CDUrl && (
-          <a href={CDUrl} target="_blank" rel="noopener noreferrer">
-            Deploy
           </a>
         )}
       </div>

@@ -11,10 +11,11 @@ export default function Projects() {
         siteMetadata {
           projects {
             name
+            description
             imageName
             sourceUrl
-            CIUrl
-            CDUrl
+            liveUrl
+            closedSource
             tags
           }
           tagUrls {
@@ -60,8 +61,6 @@ export default function Projects() {
               projectName={project.name}
               projectImage={projectImage}
               sourceUrl={project.sourceUrl}
-              CIUrl={project.CIUrl}
-              CDUrl={project.CDUrl}
               tags={project.tags}
               tagUrls={tagUrls}
             />

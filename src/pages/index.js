@@ -1,9 +1,52 @@
 import React, { useEffect, useRef } from "react"
+import { useStaticQuery, graphql } from "gatsby"
 import SEO from "../components/SEO/SEO.jsx"
+import { ProjectCard } from "../components"
 import "./index.css"
 
 export default function Home() {
   const canvasRef = useRef(null)
+
+  const data = useStaticQuery(graphql`
+    query ProjectsQuery {
+      site {
+        siteMetadata {
+          projects {
+            name
+            description
+            imageName
+            sourceUrl
+            liveUrl
+            closedSource
+            tags
+          }
+          tagUrls {
+            name
+            url
+          }
+        }
+      }
+      allFile(filter: { sourceInstanceName: { eq: "images" } }) {
+        edges {
+          node {
+            name
+            childImageSharp {
+              gatsbyImageData(
+                width: 600
+                placeholder: BLURRED
+                formats: [AUTO, WEBP]
+                layout: CONSTRAINED
+              )
+            }
+          }
+        }
+      }
+    }
+  `)
+
+  const projects = data.site.siteMetadata.projects
+  const tagUrls = data.site.siteMetadata.tagUrls
+  const images = data.allFile.edges
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -1149,25 +1192,19 @@ export default function Home() {
             <div className="glow-line" />
             <h2 className="section-title">Projects</h2>
             <div className="project-grid">
-              <div className="project-card">
-                <h3>jamieeverett.co.uk</h3>
-                <p>Personal portfolio with interactive WebGL fluid simulation background.</p>
-                <div className="project-tech">
-                  <span>React</span>
-                  <span>Gatsby</span>
-                  <span>WebGL</span>
-                  <span>Netlify</span>
-                </div>
-              </div>
-              <a href="https://everetteats.co.uk" target="_blank" rel="noreferrer" className="project-card" data-splash="link">
-                <h3>everetteats.co.uk</h3>
-                <p>Personal recipe website with filterable search and mobile-optimised design.</p>
-                <div className="project-tech">
-                  <span>.NET 8</span>
-                  <span>Blazor Server</span>
-                  <span>C#</span>
-                </div>
-              </a>
+              {projects.map((project, index) => {
+                const projectImage = images.find(
+                  (image) => image.node.name === project.imageName
+                )
+                return (
+                  <ProjectCard
+                    key={index}
+                    project={project}
+                    image={projectImage}
+                    tagUrls={tagUrls}
+                  />
+                )
+              })}
             </div>
           </div>
         </section>
