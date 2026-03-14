@@ -26,6 +26,14 @@ module.exports = {
         tags: [".NET 10", "Blazor Server", "C#"],
       },
       {
+        name: "WhoPaid",
+        description: "Receipt splitter app with AI-powered OCR. Upload a photo, assign items to people, and share each person's total via WhatsApp or SMS.",
+        imageName: "whopaid",
+        sourceUrl: "https://github.com/jreverett/WhoPaid",
+        liveUrl: "https://who-paid.netlify.app",
+        tags: ["JavaScript", "Gemini API", "Turso"],
+      },
+      {
         name: "AutoInvestor",
         description: "Autonomous AI-powered day trading bot using LLMs to analyse real-time market data, news sentiment, and technical indicators for live trading decisions.",
         imageName: "autoinvestor",
@@ -37,6 +45,8 @@ module.exports = {
       { name: "React", url: "https://react.dev" },
       { name: "Gatsby", url: "https://www.gatsbyjs.com" },
       { name: "WebGL", url: "https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API" },
+      { name: "JavaScript", url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript" },
+      { name: "Gemini API", url: "https://ai.google.dev/" },
       { name: ".NET 10", url: "https://dotnet.microsoft.com/" },
       { name: "Blazor Server", url: "https://dotnet.microsoft.com/apps/aspnet/web-apps/blazor" },
       { name: "C#", url: "https://learn.microsoft.com/en-us/dotnet/csharp/" },
