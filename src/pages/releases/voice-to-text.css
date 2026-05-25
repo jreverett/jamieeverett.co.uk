@@ -89,6 +89,8 @@
   border-radius: 50%;
   border: 1px solid rgba(0, 212, 212, 0.45);
   animation: micPulse 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  will-change: transform, opacity;
+  transform: translateZ(0);
 }
 
 .mic-pulse-1 { animation-delay: 0s; }
