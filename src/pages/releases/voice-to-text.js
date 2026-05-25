@@ -181,29 +181,6 @@ export default function VoiceToTextReleases() {
           </div>
         </header>
 
-        <section className="releases-why">
-          <p>
-            I use Claude Code&apos;s <code>/voice</code> on Mac and it&apos;s great.
-            On Windows it doesn&apos;t work nearly as well — especially in WSL through
-            Windows Terminal — and most third-party alternatives are cloud-based or
-            paywalled. So I built this. Works anywhere on Windows, runs entirely on
-            your machine, free.
-          </p>
-          <p>
-            One of the labs will probably ship something better eventually. Until then,
-            this is yours — MIT-licensed and{" "}
-            <a
-              href={`https://github.com/${REPO}`}
-              target="_blank"
-              rel="noreferrer"
-              data-splash="link"
-            >
-              open source on GitHub
-            </a>
-            .
-          </p>
-        </section>
-
         <section className="releases-download">
           {fetchFailed && (
             <div className="releases-fetch-notice" role="status">
@@ -287,6 +264,29 @@ export default function VoiceToTextReleases() {
               </a>
             </div>
           </div>
+        </section>
+
+        <section className="releases-why">
+          <p>
+            I use Claude Code&apos;s <code>/voice</code> on Mac and it&apos;s great.
+            On Windows it doesn&apos;t work nearly as well — especially in WSL through
+            Windows Terminal — and most third-party alternatives are cloud-based or
+            paywalled. So I built this. Works anywhere on Windows, runs entirely on
+            your machine, free.
+          </p>
+          <p>
+            One of the labs will probably ship something better eventually. Until then,
+            this is yours — MIT-licensed and{" "}
+            <a
+              href={`https://github.com/${REPO}`}
+              target="_blank"
+              rel="noreferrer"
+              data-splash="link"
+            >
+              open source on GitHub
+            </a>
+            .
+          </p>
         </section>
 
         <section className="releases-section">
