@@ -84,6 +84,33 @@ function formatDate(iso) {
   return iso.slice(0, 10)
 }
 
+function renderInlineMarkdown(text) {
+  const pattern = /(\[([^\]]+)\]\((https?:\/\/[^)]+)\))|(`([^`]+)`)/g
+  const parts = []
+  let lastIndex = 0
+  let key = 0
+  let match
+  while ((match = pattern.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(text.slice(lastIndex, match.index))
+    }
+    if (match[1]) {
+      parts.push(
+        <a key={key++} href={match[3]} target="_blank" rel="noreferrer" data-splash="link">
+          {match[2]}
+        </a>
+      )
+    } else if (match[4]) {
+      parts.push(<code key={key++}>{match[5]}</code>)
+    }
+    lastIndex = pattern.lastIndex
+  }
+  if (lastIndex < text.length) {
+    parts.push(text.slice(lastIndex))
+  }
+  return parts
+}
+
 function parseReleaseNotes(body) {
   if (!body) return []
   return body
@@ -443,7 +470,7 @@ export default function VoiceToTextReleases() {
                 </div>
                 <ul>
                   {release.notes.map((note, i) => (
-                    <li key={i}>{note}</li>
+                    <li key={i}>{renderInlineMarkdown(note)}</li>
                   ))}
                 </ul>
               </div>
