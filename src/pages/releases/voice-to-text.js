@@ -275,7 +275,7 @@ export default function VoiceToTextReleases() {
             your machine, free.
           </p>
           <p>
-            One of the labs will probably ship something better eventually. Until then,
+            One of the AI labs will probably ship something better eventually. Until then,
             this is yours: MIT-licensed and{" "}
             <a
               href={`https://github.com/${REPO}`}
@@ -354,10 +354,11 @@ export default function VoiceToTextReleases() {
 
             <div className="flow-step">
               <div className="flow-visual">
-                <svg className="flow-clipboard" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <rect x="6" y="4" width="12" height="16" rx="2" />
-                  <path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1" />
-                  <path d="m9 13 2 2 4-4" />
+                <svg className="flow-document" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
+                  <polyline points="14 3 14 9 20 9" />
+                  <line x1="8" y1="13" x2="16" y2="13" />
+                  <line x1="8" y1="17" x2="14" y2="17" />
                 </svg>
               </div>
               <h3>Release</h3>
