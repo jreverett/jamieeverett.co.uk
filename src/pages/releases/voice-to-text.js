@@ -8,6 +8,7 @@ import "./voice-to-text.css"
 const REPO = "jreverett/voice-to-text"
 const ASSET_NAME = "voice-to-text.zip"
 const DOWNLOAD_URL = `https://github.com/${REPO}/releases/latest/download/${ASSET_NAME}`
+const RELEASES_URL = `https://github.com/${REPO}/releases`
 
 const fallbackReleases = [
   {
@@ -25,36 +26,10 @@ const fallbackReleases = [
   },
 ]
 
-const features = [
-  {
-    title: "100% local",
-    body: "Audio and transcripts never leave your machine. No cloud, no API keys, no usage limits.",
-  },
-  {
-    title: "Push-to-talk",
-    body: "Hold Shift+Alt (or any hotkey you like), speak, release. Text lands in your clipboard.",
-  },
-  {
-    title: "Fast on CPU",
-    body: "~1.5–3s turnaround on a modern CPU with the small.en model. Tune threads and model to taste.",
-  },
-  {
-    title: "Tray-native UX",
-    body: "Coloured tray icon shows state at a glance: idle, starting, recording, transcribing.",
-  },
-]
-
 const requirements = [
   "Windows 10 or later (x64)",
   "~150 MB free disk space (extracted)",
   "A microphone (any WASAPI capture device)",
-]
-
-const installSteps = [
-  "Download the zip and extract it into a folder you own (e.g. C:\\Tools\\voice-to-text\\).",
-  "(Optional) open config.ini and set your preferred hotkey or microphone.",
-  "Double-click voice-to-text.exe. It will auto-elevate for global hotkey support.",
-  "Hold Shift+Alt, speak, release — then paste anywhere with Ctrl+V.",
 ]
 
 function formatSize(bytes) {
@@ -206,6 +181,20 @@ export default function VoiceToTextReleases() {
           </div>
         </header>
 
+        <section className="releases-why">
+          <p>
+            I live in WSL through Windows Terminal. Windows&apos; built-in{" "}
+            <span className="kbd">Win</span>+<span className="kbd">H</span> voice typing
+            doesn&apos;t play nicely with terminal windows, and most third-party options
+            are cloud-based or paywalled. So I built this — it works anywhere on Windows,
+            runs entirely on your machine, and is free.
+          </p>
+          <p>
+            One of the labs will probably ship something better eventually. Until then,
+            this is yours.
+          </p>
+        </section>
+
         <section className="releases-download">
           {fetchFailed && (
             <div className="releases-fetch-notice" role="status">
@@ -265,20 +254,109 @@ export default function VoiceToTextReleases() {
                 By downloading you agree this is an unsigned Windows build. Your browser or
                 SmartScreen may warn you — that&apos;s expected for open-tool binaries.
               </p>
+
+              <a
+                href={RELEASES_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="download-releases-link"
+                data-splash="link"
+              >
+                View all releases on GitHub
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M7 17 17 7" />
+                  <path d="M7 7h10v10" />
+                </svg>
+              </a>
             </div>
           </div>
         </section>
 
         <section className="releases-section">
-          <h2 className="section-title">What&apos;s inside</h2>
-          <div className="feature-grid">
-            {features.map((feature) => (
-              <div className="feature-card" key={feature.title}>
-                <div className="feature-card-dot" />
-                <h3>{feature.title}</h3>
-                <p>{feature.body}</p>
+          <h2 className="section-title">How it works</h2>
+          <div className="how-flow">
+            <div className="flow-step">
+              <div className="flow-visual">
+                <div className="flow-keys">
+                  <span className="kbd">Shift</span>
+                  <span className="flow-plus">+</span>
+                  <span className="kbd">Alt</span>
+                </div>
               </div>
-            ))}
+              <h3>Press the hotkey</h3>
+              <p>
+                Default is <span className="kbd">Shift</span>+<span className="kbd">Alt</span>.
+                Pick any combination you like in <code>config.ini</code>.
+              </p>
+            </div>
+
+            <div className="flow-arrow" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 12h14" />
+                <path d="m12 5 7 7-7 7" />
+              </svg>
+            </div>
+
+            <div className="flow-step">
+              <div className="flow-visual">
+                <div className="tray-strip" aria-hidden="true">
+                  <div className="tray-dot tray-dot-idle" />
+                  <div className="tray-dot tray-dot-recording" />
+                </div>
+              </div>
+              <h3>Wait for red</h3>
+              <p>
+                The tray icon flicks from green to red — that means it&apos;s recording.
+                Now go.
+              </p>
+            </div>
+
+            <div className="flow-arrow" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 12h14" />
+                <path d="m12 5 7 7-7 7" />
+              </svg>
+            </div>
+
+            <div className="flow-step">
+              <div className="flow-visual">
+                <div className="flow-waves" aria-hidden="true">
+                  <span /><span /><span /><span /><span />
+                </div>
+              </div>
+              <h3>Talk away</h3>
+              <p>Hold the key for as long as you need. There&apos;s no time limit.</p>
+            </div>
+
+            <div className="flow-arrow" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 12h14" />
+                <path d="m12 5 7 7-7 7" />
+              </svg>
+            </div>
+
+            <div className="flow-step">
+              <div className="flow-visual">
+                <svg className="flow-clipboard" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <rect x="6" y="4" width="12" height="16" rx="2" />
+                  <path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1" />
+                  <path d="m9 13 2 2 4-4" />
+                </svg>
+              </div>
+              <h3>Release</h3>
+              <p>
+                Transcribes locally on your CPU and copies straight to your clipboard.
+                Paste anywhere with <span className="kbd">Ctrl</span>+<span className="kbd">V</span>.
+              </p>
+            </div>
           </div>
         </section>
 
@@ -289,18 +367,6 @@ export default function VoiceToTextReleases() {
               <li key={req}>{req}</li>
             ))}
           </ul>
-        </section>
-
-        <section className="releases-section">
-          <h2 className="section-title">Install</h2>
-          <ol className="install-steps">
-            {installSteps.map((step, i) => (
-              <li key={i}>
-                <span className="install-step-num">{String(i + 1).padStart(2, "0")}</span>
-                <span className="install-step-body">{step}</span>
-              </li>
-            ))}
-          </ol>
         </section>
 
         <section className="releases-section">
