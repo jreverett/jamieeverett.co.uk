@@ -540,23 +540,23 @@
   font-size: 0.88rem;
   padding: 0.4rem 0.7rem;
   box-shadow: 0 3px 0 rgba(0, 212, 212, 0.2);
-  animation: key-press 4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  animation: key-press 2.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
   transform-origin: center;
 }
 
 @keyframes key-press {
-  0%, 8% {
+  0%, 10% {
     transform: translateY(0);
     box-shadow: 0 3px 0 rgba(0, 212, 212, 0.2);
     background: rgba(0, 212, 212, 0.08);
   }
-  14%, 22% {
+  20%, 35% {
     transform: translateY(3px);
     box-shadow: 0 0 0 rgba(0, 212, 212, 0.2);
     background: rgba(0, 212, 212, 0.22);
     border-color: rgba(0, 212, 212, 0.6);
   }
-  28%, 100% {
+  45%, 100% {
     transform: translateY(0);
     box-shadow: 0 3px 0 rgba(0, 212, 212, 0.2);
     background: rgba(0, 212, 212, 0.08);
@@ -694,39 +694,72 @@
   height: 13px;
 }
 
-/* Requirements */
+/* Requirements grid */
 
-.requirements-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+.requirements-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.7rem;
+}
+
+.requirement-card {
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 1rem 1.1rem;
+  background: rgba(12, 14, 18, 0.5);
+  border: 1px solid rgba(0, 212, 212, 0.12);
+  border-radius: 12px;
+  transition: all 0.25s ease;
 }
 
-.requirements-list li {
-  position: relative;
-  padding: 0.7rem 0.9rem 0.7rem 2.2rem;
-  background: rgba(0, 212, 212, 0.03);
-  border: 1px solid rgba(0, 212, 212, 0.1);
-  border-radius: 8px;
-  font-family: 'Geist Mono', monospace;
-  font-size: 0.85rem;
-  color: var(--text-secondary, rgba(255, 255, 255, 0.75));
+.requirement-card:hover {
+  border-color: rgba(0, 212, 212, 0.28);
+  transform: translateY(-2px);
 }
 
-.requirements-list li::before {
-  content: '✓';
-  position: absolute;
-  left: 0.85rem;
-  top: 50%;
-  transform: translateY(-50%);
+.requirement-icon {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
   color: var(--accent, #00d4d4);
-  font-weight: 600;
+  filter: drop-shadow(0 0 6px rgba(0, 212, 212, 0.25));
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* Install steps */
+.requirement-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.requirement-title {
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: var(--text-primary, #ffffff);
+  line-height: 1.2;
+}
+
+.requirement-sub {
+  font-size: 0.75rem;
+  color: var(--text-muted, rgba(255, 255, 255, 0.5));
+  margin-top: 0.2rem;
+  font-family: 'Geist Mono', monospace;
+  letter-spacing: 0.02em;
+}
+
+@media (max-width: 900px) {
+  .requirements-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 500px) {
+  .requirements-grid {
+    grid-template-columns: 1fr;
+  }
+}
 
 /* Release notes */
 

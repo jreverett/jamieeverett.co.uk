@@ -27,9 +27,50 @@ const fallbackReleases = [
 ]
 
 const requirements = [
-  "Windows 10 or later (x64)",
-  "~150 MB free disk space (extracted)",
-  "A microphone (any WASAPI capture device)",
+  {
+    title: "Windows 10+",
+    sub: "64-bit only",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="3" width="8" height="8" rx="1" />
+        <rect x="13" y="3" width="8" height="8" rx="1" />
+        <rect x="3" y="13" width="8" height="8" rx="1" />
+        <rect x="13" y="13" width="8" height="8" rx="1" />
+      </svg>
+    ),
+  },
+  {
+    title: "Any microphone",
+    sub: "WASAPI input",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="9" y="2" width="6" height="12" rx="3" />
+        <path d="M5 10v2a7 7 0 0 0 14 0v-2" />
+        <line x1="12" y1="19" x2="12" y2="22" />
+      </svg>
+    ),
+  },
+  {
+    title: "~150 MB",
+    sub: "Free disk space",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="6" width="18" height="12" rx="2" />
+        <circle cx="7" cy="14" r="1.1" fill="currentColor" />
+        <circle cx="11" cy="14" r="1.1" fill="currentColor" />
+      </svg>
+    ),
+  },
+  {
+    title: "Admin rights",
+    sub: "For global hotkeys (UAC)",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 2 4 5v7c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V5l-8-3z" />
+        <path d="m9 12 2 2 4-4" />
+      </svg>
+    ),
+  },
 ]
 
 function formatSize(bytes) {
@@ -371,11 +412,17 @@ export default function VoiceToTextReleases() {
 
         <section className="releases-section">
           <h2 className="section-title">Requirements</h2>
-          <ul className="requirements-list">
+          <div className="requirements-grid">
             {requirements.map((req) => (
-              <li key={req}>{req}</li>
+              <div className="requirement-card" key={req.title}>
+                <div className="requirement-icon">{req.icon}</div>
+                <div>
+                  <div className="requirement-title">{req.title}</div>
+                  <div className="requirement-sub">{req.sub}</div>
+                </div>
+              </div>
             ))}
-          </ul>
+          </div>
         </section>
 
         <section className="releases-section">
