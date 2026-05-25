@@ -17,6 +17,7 @@ export default function Home() {
             imageName
             sourceUrl
             liveUrl
+            downloadsUrl
             closedSource
             tags
           }
@@ -465,7 +466,6 @@ export default function Home() {
     let cvButtonDocPos = null
 
     // Scroll state for fading button overlay
-    let isScrolling = false
     let scrollTimeout = null
     let buttonOpacity = 1.0
     let targetButtonOpacity = 1.0
@@ -946,7 +946,6 @@ export default function Home() {
     const handleScroll = () => {
       // Fade out button overlay while scrolling
       targetButtonOpacity = 0
-      isScrolling = true
 
       // Clear existing timeout
       if (scrollTimeout) {
@@ -955,7 +954,6 @@ export default function Home() {
 
       // Fade back in after scrolling stops
       scrollTimeout = setTimeout(() => {
-        isScrolling = false
         targetButtonOpacity = 1
       }, 300)
     }

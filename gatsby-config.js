@@ -40,6 +40,13 @@ module.exports = {
         closedSource: true,
         tags: [".NET 10", "Blazor Server", "C#", "AI/LLMs", "Turso"],
       },
+      {
+        name: "Voice-to-Text",
+        description: "Local push-to-talk speech-to-text for Windows. Hold a hotkey, speak, release — transcribed text lands in your clipboard. 100% offline, powered by whisper.cpp.",
+        closedSource: true,
+        downloadsUrl: "/releases/voice-to-text",
+        tags: ["AutoHotkey", "C#", ".NET 10", "whisper.cpp"],
+      },
     ],
     tagUrls: [
       { name: "React", url: "https://react.dev" },
@@ -52,6 +59,8 @@ module.exports = {
       { name: "C#", url: "https://learn.microsoft.com/en-us/dotnet/csharp/" },
       { name: "AI/LLMs", url: "https://en.wikipedia.org/wiki/Large_language_model" },
       { name: "Turso", url: "https://turso.tech/" },
+      { name: "AutoHotkey", url: "https://www.autohotkey.com/" },
+      { name: "whisper.cpp", url: "https://github.com/ggerganov/whisper.cpp" },
     ],
   },
   plugins: [

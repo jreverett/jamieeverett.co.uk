@@ -214,6 +214,17 @@
   box-shadow: inset 0 0 0 1px rgba(251, 191, 36, 0.5);
 }
 
+.project-link.download {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.project-link.download .download-icon {
+  width: 11px;
+  height: 11px;
+}
+
 @media (max-width: 500px) {
   .source-tooltip {
     right: auto;
