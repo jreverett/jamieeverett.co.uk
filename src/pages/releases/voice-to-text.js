@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react"
-import { Helmet } from "react-helmet"
 import { Link } from "gatsby"
 
 import { FluidBackground } from "../../components"
+import SEO from "../../components/SEO/SEO.jsx"
 import "./voice-to-text.css"
 
 const REPO = "jreverett/voice-to-text"
@@ -146,13 +146,13 @@ export default function VoiceToTextReleases() {
 
   return (
     <>
-      <Helmet>
-        <title>Voice-to-Text Downloads | Jamie Everett</title>
-        <meta
-          name="description"
-          content="Download Voice-to-Text: a local, offline push-to-talk speech-to-text app for Windows, powered by whisper.cpp."
-        />
-      </Helmet>
+      <SEO
+        title="Voice-to-Text Downloads"
+        description="Download Voice-to-Text: a local, offline push-to-talk speech-to-text app for Windows, powered by whisper.cpp."
+        image="/og/voice-to-text.png"
+        pathname="/releases/voice-to-text"
+        meta={[{ name: "twitter:card", content: "summary_large_image" }]}
+      />
       <FluidBackground />
 
       <div className="releases-page">
