@@ -63,7 +63,7 @@ const requirements = [
   },
   {
     title: "Admin rights",
-    sub: "For global hotkeys (UAC)",
+    sub: "Via UAC prompt",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
         <path d="M12 2 4 5v7c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V5l-8-3z" />
