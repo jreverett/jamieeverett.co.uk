@@ -43,7 +43,7 @@ module.exports = {
       {
         name: "Voice-to-Text",
         description: "Local push-to-talk speech-to-text for Windows. Hold a hotkey, speak, release — transcribed text lands in your clipboard. 100% offline, powered by whisper.cpp.",
-        closedSource: true,
+        sourceUrl: "https://github.com/jreverett/voice-to-text",
         downloadsUrl: "/releases/voice-to-text",
         tags: ["AutoHotkey", "C#", ".NET 10", "whisper.cpp"],
       },
