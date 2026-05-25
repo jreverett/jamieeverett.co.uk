@@ -17,6 +17,7 @@ export default function Home() {
             imageName
             sourceUrl
             liveUrl
+            downloadsUrl
             closedSource
             tags
           }
