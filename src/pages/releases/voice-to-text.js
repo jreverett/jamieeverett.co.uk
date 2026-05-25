@@ -155,7 +155,7 @@ export default function VoiceToTextReleases() {
             </svg>
           </div>
 
-          <span className="releases-eyebrow">Windows · offline · free</span>
+          <span className="releases-eyebrow">Windows · offline · free · open source</span>
           <h1 className="releases-title">Voice-to-Text</h1>
           <p className="releases-tagline">
             Local push-to-talk speech-to-text. Hold a hotkey, speak, release —
@@ -191,7 +191,16 @@ export default function VoiceToTextReleases() {
           </p>
           <p>
             One of the labs will probably ship something better eventually. Until then,
-            this is yours.
+            this is yours — MIT-licensed and{" "}
+            <a
+              href={`https://github.com/${REPO}`}
+              target="_blank"
+              rel="noreferrer"
+              data-splash="link"
+            >
+              open source on GitHub
+            </a>
+            .
           </p>
         </section>
 

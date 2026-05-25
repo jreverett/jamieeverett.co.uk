@@ -434,6 +434,17 @@
   border-radius: 4px;
 }
 
+.releases-why a {
+  color: var(--accent, #00d4d4);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(0, 212, 212, 0.35);
+  transition: border-color 0.2s ease;
+}
+
+.releases-why a:hover {
+  border-bottom-color: var(--accent, #00d4d4);
+}
+
 /* How it works flow */
 
 .how-flow {
