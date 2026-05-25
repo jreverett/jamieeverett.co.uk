@@ -425,16 +425,13 @@
   margin-top: 0.85rem;
 }
 
-.releases-why .kbd {
+.releases-why code {
   font-family: 'Geist Mono', monospace;
-  font-size: 0.78rem;
-  padding: 0.18rem 0.45rem;
-  border-radius: 5px;
-  border: 1px solid rgba(0, 212, 212, 0.3);
-  background: rgba(0, 212, 212, 0.08);
-  box-shadow: 0 2px 0 rgba(0, 212, 212, 0.15);
-  color: var(--text-primary, #ffffff);
-  white-space: nowrap;
+  font-size: 0.88rem;
+  color: var(--accent, #00d4d4);
+  background: rgba(0, 212, 212, 0.06);
+  padding: 0.05rem 0.4rem;
+  border-radius: 4px;
 }
 
 /* How it works flow */

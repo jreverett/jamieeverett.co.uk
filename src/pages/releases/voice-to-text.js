@@ -183,11 +183,11 @@ export default function VoiceToTextReleases() {
 
         <section className="releases-why">
           <p>
-            I live in WSL through Windows Terminal. Windows&apos; built-in{" "}
-            <span className="kbd">Win</span>+<span className="kbd">H</span> voice typing
-            doesn&apos;t play nicely with terminal windows, and most third-party options
-            are cloud-based or paywalled. So I built this — it works anywhere on Windows,
-            runs entirely on your machine, and is free.
+            I use Claude Code&apos;s <code>/voice</code> on Mac and it&apos;s great.
+            On Windows it doesn&apos;t work nearly as well — especially in WSL through
+            Windows Terminal — and most third-party alternatives are cloud-based or
+            paywalled. So I built this. Works anywhere on Windows, runs entirely on
+            your machine, free.
           </p>
           <p>
             One of the labs will probably ship something better eventually. Until then,
