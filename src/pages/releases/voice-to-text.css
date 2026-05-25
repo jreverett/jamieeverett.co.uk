@@ -1,7 +1,7 @@
 .releases-page {
   position: relative;
   z-index: 10;
-  max-width: 900px;
+  max-width: 1220px;
   margin: 0 auto;
   padding: 1rem 1.5rem 4rem;
   font-family: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -60,15 +60,15 @@
 
 .releases-hero {
   text-align: center;
-  padding: 0.25rem 1rem 1rem;
+  padding: 1rem 1rem 2rem;
   position: relative;
 }
 
 .releases-mic {
   position: relative;
-  width: 56px;
-  height: 56px;
-  margin: 0 auto 0.65rem;
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 1.1rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -109,15 +109,11 @@
 .releases-eyebrow {
   display: inline-block;
   font-family: 'Geist Mono', monospace;
-  font-size: 0.72rem;
-  letter-spacing: 0.18em;
+  font-size: 0.62rem;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--accent, #00d4d4);
-  background: rgba(0, 212, 212, 0.1);
-  border: 1px solid rgba(0, 212, 212, 0.25);
-  padding: 0.3rem 0.7rem;
-  border-radius: 999px;
-  margin-bottom: 0.6rem;
+  color: var(--text-muted, rgba(255, 255, 255, 0.42));
+  margin-bottom: 1rem;
 }
 
 .releases-title {
@@ -125,7 +121,7 @@
   font-weight: 600;
   letter-spacing: -0.03em;
   line-height: 1.05;
-  margin: 0 0 0.6rem;
+  margin: 0 0 1rem;
   background: linear-gradient(135deg, #ffffff 0%, var(--accent, #00d4d4) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -134,7 +130,7 @@
 
 .releases-tagline {
   max-width: 620px;
-  margin: 0 auto 0.85rem;
+  margin: 0 auto 1.3rem;
   color: var(--text-secondary, rgba(255, 255, 255, 0.75));
   font-size: clamp(0.9rem, 1.8vw, 1rem);
   line-height: 1.55;
@@ -467,10 +463,6 @@
   display: flex;
   align-items: stretch;
   gap: 0.6rem;
-  /* Allow the flow to extend beyond the 900px page width on wider screens.
-     Clamps so it never overflows the viewport and never goes positive. */
-  margin-left: clamp(-160px, calc(-50vw + 50% + 1.5rem), 0px);
-  margin-right: clamp(-160px, calc(-50vw + 50% + 1.5rem), 0px);
 }
 
 .flow-step {
@@ -821,8 +813,6 @@
   .how-flow {
     flex-direction: column;
     gap: 0.4rem;
-    margin-left: 0;
-    margin-right: 0;
   }
 
   .flow-arrow {

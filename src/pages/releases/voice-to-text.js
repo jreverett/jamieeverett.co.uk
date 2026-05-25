@@ -17,7 +17,7 @@ const fallbackReleases = [
     sizeBytes: 47323953,
     notes: [
       "Initial public release.",
-      "Standalone Windows bundle — no installer, no dependencies to fetch.",
+      "Standalone Windows bundle: no installer, no dependencies to fetch.",
       "Push-to-talk speech-to-text with whisper.cpp (small.en model).",
       "WASAPI microphone capture via bundled mic-capture tool.",
       "Tray icon with idle / starting / recording / transcribing states.",
@@ -106,7 +106,7 @@ export default function VoiceToTextReleases() {
   return (
     <>
       <Helmet>
-        <title>Voice-to-Text — Downloads | Jamie Everett</title>
+        <title>Voice-to-Text Downloads | Jamie Everett</title>
         <meta
           name="description"
           content="Download Voice-to-Text: a local, offline push-to-talk speech-to-text app for Windows, powered by whisper.cpp."
@@ -158,8 +158,8 @@ export default function VoiceToTextReleases() {
           <span className="releases-eyebrow">Windows · offline · free · open source</span>
           <h1 className="releases-title">Voice-to-Text</h1>
           <p className="releases-tagline">
-            Local push-to-talk speech-to-text. Hold a hotkey, speak, release —
-            transcribed text lands in your clipboard. Powered by{" "}
+            Local push-to-talk speech-to-text. Hold a hotkey, speak, release,
+            and the transcribed text lands in your clipboard. Powered by{" "}
             <a
               href="https://github.com/ggerganov/whisper.cpp"
               target="_blank"
@@ -198,7 +198,7 @@ export default function VoiceToTextReleases() {
                 <line x1="12" y1="16" x2="12.01" y2="16" />
               </svg>
               <span>
-                Couldn&apos;t fetch live release metadata from GitHub. Showing cached info —
+                Couldn&apos;t fetch live release metadata from GitHub. Showing cached info;
                 the download button still resolves to the latest release.
               </span>
             </div>
@@ -238,7 +238,7 @@ export default function VoiceToTextReleases() {
 
               <p className="download-disclaimer">
                 By downloading you agree this is an unsigned Windows build. Your browser or
-                SmartScreen may warn you — that&apos;s expected for open-tool binaries.
+                SmartScreen may warn you; that&apos;s expected for open-tool binaries.
               </p>
 
               <a
@@ -269,14 +269,14 @@ export default function VoiceToTextReleases() {
         <section className="releases-why">
           <p>
             I use Claude Code&apos;s <code>/voice</code> on Mac and it&apos;s great.
-            On Windows it doesn&apos;t work nearly as well — especially in WSL through
-            Windows Terminal — and most third-party alternatives are cloud-based or
+            On Windows it doesn&apos;t work nearly as well, especially in WSL through
+            Windows Terminal, and most third-party alternatives are cloud-based or
             paywalled. So I built this. Works anywhere on Windows, runs entirely on
             your machine, free.
           </p>
           <p>
             One of the labs will probably ship something better eventually. Until then,
-            this is yours — MIT-licensed and{" "}
+            this is yours: MIT-licensed and{" "}
             <a
               href={`https://github.com/${REPO}`}
               target="_blank"
@@ -323,7 +323,7 @@ export default function VoiceToTextReleases() {
               </div>
               <h3>Wait for red</h3>
               <p>
-                The tray icon flicks from green to red — that means it&apos;s recording.
+                The tray icon flicks from green to red. That means it&apos;s recording.
                 Now go.
               </p>
             </div>
