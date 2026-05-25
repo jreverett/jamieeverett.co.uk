@@ -79,13 +79,18 @@ function parseReleaseNotes(body) {
 export default function VoiceToTextReleases() {
   const [copied, setCopied] = useState(false)
   const [releases, setReleases] = useState(fallbackReleases)
+  const [fetchFailed, setFetchFailed] = useState(false)
 
   useEffect(() => {
     let cancelled = false
     fetch(`https://api.github.com/repos/${REPO}/releases`)
       .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
       .then((data) => {
-        if (cancelled || !Array.isArray(data) || data.length === 0) return
+        if (cancelled) return
+        if (!Array.isArray(data) || data.length === 0) {
+          setFetchFailed(true)
+          return
+        }
         const mapped = data
           .filter((r) => !r.draft)
           .map((r) => {
@@ -99,10 +104,14 @@ export default function VoiceToTextReleases() {
               notes: parseReleaseNotes(r.body),
             }
           })
-        if (mapped.length > 0) setReleases(mapped)
+        if (mapped.length > 0) {
+          setReleases(mapped)
+        } else {
+          setFetchFailed(true)
+        }
       })
       .catch(() => {
-        // keep fallback
+        if (!cancelled) setFetchFailed(true)
       })
     return () => {
       cancelled = true
@@ -198,6 +207,27 @@ export default function VoiceToTextReleases() {
         </header>
 
         <section className="releases-download">
+          {fetchFailed && (
+            <div className="releases-fetch-notice" role="status">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="13" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+              <span>
+                Couldn&apos;t fetch live release metadata from GitHub. Showing cached info —
+                the download button still resolves to the latest release.
+              </span>
+            </div>
+          )}
           <div className="download-card">
             <div className="glow-line" />
             <div className="download-card-body">
