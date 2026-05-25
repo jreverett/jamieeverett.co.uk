@@ -354,11 +354,10 @@ export default function VoiceToTextReleases() {
 
             <div className="flow-step">
               <div className="flow-visual">
-                <svg className="flow-document" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
-                  <polyline points="14 3 14 9 20 9" />
-                  <line x1="8" y1="13" x2="16" y2="13" />
-                  <line x1="8" y1="17" x2="14" y2="17" />
+                <svg className="flow-scribble" viewBox="0 0 32 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M2 6c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2 2-2 4-2 2 2 4 2" />
+                  <path d="M2 12c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2 2-2 4-2" />
+                  <path d="M2 18c2 0 2-2 4-2s2 2 4 2 2-2 4-2" />
                 </svg>
               </div>
               <h3>Release</h3>
