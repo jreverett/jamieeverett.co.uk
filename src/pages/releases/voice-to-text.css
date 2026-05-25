@@ -404,25 +404,41 @@
 
 /* Features grid */
 
-/* Why section */
+/* Why section — terminal prompt aesthetic */
 
 .releases-why {
   margin-bottom: 3rem;
-  padding: 1.5rem 1.75rem;
-  background: rgba(0, 212, 212, 0.03);
-  border-left: 2px solid rgba(0, 212, 212, 0.5);
-  border-radius: 6px;
+  padding: 1.5rem 1.85rem 1.65rem;
+  background:
+    radial-gradient(ellipse at top left, rgba(0, 212, 212, 0.06), transparent 60%),
+    rgba(8, 10, 14, 0.5);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+.releases-why::before {
+  content: '~/voice-to-text $ cat why.md';
+  display: block;
+  font-family: 'Geist Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--accent, #00d4d4);
+  opacity: 0.6;
+  margin-bottom: 1rem;
+  letter-spacing: 0.02em;
 }
 
 .releases-why p {
   margin: 0;
   font-size: 0.98rem;
-  line-height: 1.65;
-  color: var(--text-secondary, rgba(255, 255, 255, 0.82));
+  line-height: 1.7;
+  color: var(--text-secondary, rgba(255, 255, 255, 0.85));
 }
 
 .releases-why p + p {
-  margin-top: 0.85rem;
+  margin-top: 0.75rem;
 }
 
 .releases-why code {
@@ -451,6 +467,10 @@
   display: flex;
   align-items: stretch;
   gap: 0.6rem;
+  /* Allow the flow to extend beyond the 900px page width on wider screens.
+     Clamps so it never overflows the viewport and never goes positive. */
+  margin-left: clamp(-160px, calc(-50vw + 50% + 1.5rem), 0px);
+  margin-right: clamp(-160px, calc(-50vw + 50% + 1.5rem), 0px);
 }
 
 .flow-step {
@@ -461,7 +481,7 @@
   background: rgba(12, 14, 18, 0.5);
   border: 1px solid rgba(0, 212, 212, 0.12);
   border-radius: 14px;
-  padding: 1.5rem 1.1rem 1.25rem;
+  padding: 1.6rem 1.35rem 1.4rem;
   transition: all 0.25s ease;
 }
 
@@ -479,17 +499,17 @@
 }
 
 .flow-step h3 {
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: 500;
-  margin: 0 0 0.45rem;
+  margin: 0 0 0.55rem;
   text-align: center;
   color: var(--text-primary, #ffffff);
 }
 
 .flow-step p {
-  font-size: 0.83rem;
-  line-height: 1.55;
-  color: var(--text-secondary, rgba(255, 255, 255, 0.72));
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: var(--text-secondary, rgba(255, 255, 255, 0.75));
   margin: 0;
   text-align: center;
 }
@@ -801,6 +821,8 @@
   .how-flow {
     flex-direction: column;
     gap: 0.4rem;
+    margin-left: 0;
+    margin-right: 0;
   }
 
   .flow-arrow {
