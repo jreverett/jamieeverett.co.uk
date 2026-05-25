@@ -92,7 +92,7 @@ export default function VoiceToTextReleases() {
           return
         }
         const mapped = data
-          .filter((r) => !r.draft)
+          .filter((r) => !r.draft && !r.prerelease)
           .map((r) => {
             const asset =
               (r.assets || []).find((a) => a.name === ASSET_NAME) ||
