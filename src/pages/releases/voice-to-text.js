@@ -31,7 +31,7 @@ const requirements = [
     title: "Windows 10+",
     sub: "64-bit only",
     icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
         <rect x="3" y="3" width="8" height="8" rx="1" />
         <rect x="13" y="3" width="8" height="8" rx="1" />
         <rect x="3" y="13" width="8" height="8" rx="1" />
@@ -43,7 +43,7 @@ const requirements = [
     title: "Any microphone",
     sub: "WASAPI input",
     icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
         <rect x="9" y="2" width="6" height="12" rx="3" />
         <path d="M5 10v2a7 7 0 0 0 14 0v-2" />
         <line x1="12" y1="19" x2="12" y2="22" />
@@ -54,7 +54,7 @@ const requirements = [
     title: "~150 MB",
     sub: "Free disk space",
     icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
         <rect x="3" y="6" width="18" height="12" rx="2" />
         <circle cx="7" cy="14" r="1.1" fill="currentColor" />
         <circle cx="11" cy="14" r="1.1" fill="currentColor" />
@@ -65,7 +65,7 @@ const requirements = [
     title: "Admin rights",
     sub: "Via UAC prompt",
     icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
         <path d="M12 2 4 5v7c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V5l-8-3z" />
         <path d="m9 12 2 2 4-4" />
       </svg>
@@ -186,7 +186,7 @@ export default function VoiceToTextReleases() {
         <nav className="releases-nav">
           <Link to="/" className="releases-back" data-splash="link">
             <svg
-              viewBox="0 0 24 24"
+              width="24" height="24" viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
               strokeWidth="2"
@@ -210,7 +210,7 @@ export default function VoiceToTextReleases() {
             <div className="mic-pulse mic-pulse-3" />
             <svg
               className="mic-icon"
-              viewBox="0 0 24 24"
+              width="24" height="24" viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
               strokeWidth="1.8"
@@ -253,7 +253,7 @@ export default function VoiceToTextReleases() {
           {fetchFailed && (
             <div className="releases-fetch-notice" role="status">
               <svg
-                viewBox="0 0 24 24"
+                width="24" height="24" viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="2"
@@ -289,7 +289,7 @@ export default function VoiceToTextReleases() {
                 data-splash="link"
               >
                 <svg
-                  viewBox="0 0 24 24"
+                  width="24" height="24" viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="2.2"
@@ -318,7 +318,7 @@ export default function VoiceToTextReleases() {
               >
                 View all releases on GitHub
                 <svg
-                  viewBox="0 0 24 24"
+                  width="24" height="24" viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="2"
@@ -376,7 +376,7 @@ export default function VoiceToTextReleases() {
             </div>
 
             <div className="flow-arrow" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M5 12h14" />
                 <path d="m12 5 7 7-7 7" />
               </svg>
@@ -397,7 +397,7 @@ export default function VoiceToTextReleases() {
             </div>
 
             <div className="flow-arrow" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M5 12h14" />
                 <path d="m12 5 7 7-7 7" />
               </svg>
@@ -414,7 +414,7 @@ export default function VoiceToTextReleases() {
             </div>
 
             <div className="flow-arrow" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M5 12h14" />
                 <path d="m12 5 7 7-7 7" />
               </svg>
@@ -422,7 +422,7 @@ export default function VoiceToTextReleases() {
 
             <div className="flow-step">
               <div className="flow-visual">
-                <svg className="flow-scribble" viewBox="0 0 32 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <svg className="flow-scribble" width="32" height="24" viewBox="0 0 32 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <path d="M2 6c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2 2-2 4-2 2 2 4 2" />
                   <path d="M2 12c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2 2-2 4-2" />
                   <path d="M2 18c2 0 2-2 4-2s2 2 4 2 2-2 4-2" />

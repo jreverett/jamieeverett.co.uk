@@ -57,7 +57,7 @@ export default function ProjectCard({ project, image, tagUrls }) {
           {closedSource ? (
             <svg
               className="source-icon"
-              viewBox="0 0 24 24"
+              width="24" height="24" viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
               strokeWidth="2"
@@ -70,7 +70,7 @@ export default function ProjectCard({ project, image, tagUrls }) {
           ) : (
             <svg
               className="source-icon"
-              viewBox="0 0 24 24"
+              width="24" height="24" viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
               strokeWidth="2"
@@ -152,7 +152,7 @@ export default function ProjectCard({ project, image, tagUrls }) {
             >
               <svg
                 className="download-icon"
-                viewBox="0 0 24 24"
+                width="24" height="24" viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="2.2"
