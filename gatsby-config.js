@@ -26,6 +26,13 @@ module.exports = {
         tags: [".NET 10", "Blazor Server", "C#"],
       },
       {
+        name: "Voice-to-Text",
+        description: "Local push-to-talk speech-to-text for Windows. Hold a hotkey, speak, release — transcribed text lands in your clipboard. 100% offline, powered by whisper.cpp.",
+        sourceUrl: "https://github.com/jreverett/voice-to-text",
+        downloadsUrl: "/releases/voice-to-text",
+        tags: ["AutoHotkey", "C#", ".NET 10", "whisper.cpp"],
+      },
+      {
         name: "WhoPaid",
         description: "Receipt splitter app with AI-powered OCR. Upload a photo, assign items to people, and share each person's total via WhatsApp or SMS.",
         imageName: "whopaid",
@@ -41,11 +48,11 @@ module.exports = {
         tags: [".NET 10", "Blazor Server", "C#", "AI/LLMs", "Turso"],
       },
       {
-        name: "Voice-to-Text",
-        description: "Local push-to-talk speech-to-text for Windows. Hold a hotkey, speak, release — transcribed text lands in your clipboard. 100% offline, powered by whisper.cpp.",
-        sourceUrl: "https://github.com/jreverett/voice-to-text",
-        downloadsUrl: "/releases/voice-to-text",
-        tags: ["AutoHotkey", "C#", ".NET 10", "whisper.cpp"],
+        name: "GTO Trainer",
+        description: "Texas Hold'em study tool built around a self-trained card and table detection model that reads the felt straight off-screen. You commit your action before it reveals the GTO maths — ranked plays, pot odds, equity, EV, and a deviation grade from a pure-algorithm equity engine.",
+        imageName: "gto-trainer",
+        closedSource: true,
+        tags: ["TypeScript", "Next.js", "Electron", "YOLO"],
       },
     ],
     tagUrls: [
@@ -61,6 +68,10 @@ module.exports = {
       { name: "Turso", url: "https://turso.tech/" },
       { name: "AutoHotkey", url: "https://www.autohotkey.com/" },
       { name: "whisper.cpp", url: "https://github.com/ggerganov/whisper.cpp" },
+      { name: "TypeScript", url: "https://www.typescriptlang.org/" },
+      { name: "Next.js", url: "https://nextjs.org/" },
+      { name: "Electron", url: "https://www.electronjs.org/" },
+      { name: "YOLO", url: "https://docs.ultralytics.com/" },
     ],
   },
   plugins: [
