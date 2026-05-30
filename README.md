@@ -4,7 +4,7 @@
   </a>
 </p>
 <h1 align="center">
-  jamieeverett.co.uk
+  <a href="https://www.jamieeverett.co.uk">jamieeverett.co.uk</a>
 </h1>
 
 [![Netlify Status](https://api.netlify.com/api/v1/badges/956fb36f-20ea-4546-a857-1ba9234d0703/deploy-status)](https://app.netlify.com/sites/quirky-chandrasekhar-d7c462/deploys)
