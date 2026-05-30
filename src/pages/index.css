@@ -251,6 +251,72 @@ body.no-select {
   }
 }
 
+.drag-hint {
+  position: fixed;
+  bottom: 2.5rem;
+  right: 8%;
+  /* Letters and icon are painted by the WebGL shader using a mask, so the HTML
+     elements only need to occupy the right amount of space for measurement. */
+  color: transparent;
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  z-index: 20;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.9s ease;
+}
+
+.drag-hint.visible {
+  opacity: 1;
+}
+
+.drag-hint.dismissed {
+  opacity: 0;
+}
+
+.drag-hint-cursor {
+  width: 13px;
+  height: 17px;
+  display: block;
+  /* WebGL paints the icon shape via the mask; the SVG just reserves space. */
+  visibility: hidden;
+  animation: dragHintDrift 3.4s ease-in-out infinite;
+}
+
+@keyframes dragHintDrift {
+  0% {
+    transform: translate(0, 0);
+    opacity: 0.6;
+  }
+  25% {
+    transform: translate(7px, -4px);
+    opacity: 0.95;
+  }
+  50% {
+    transform: translate(11px, 3px);
+    opacity: 1;
+  }
+  75% {
+    transform: translate(4px, 5px);
+    opacity: 0.85;
+  }
+  100% {
+    transform: translate(0, 0);
+    opacity: 0.6;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drag-hint-cursor {
+    animation: none;
+  }
+}
+
 section {
   padding: 3rem 2rem;
   padding-left: 8%;
@@ -577,6 +643,17 @@ footer {
 
   .scroll-hint {
     left: 6%;
+  }
+
+  .drag-hint {
+    right: 6%;
+    font-size: 0.65rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .drag-hint {
+    display: none;
   }
 }
 

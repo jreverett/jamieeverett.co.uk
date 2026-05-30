@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import { useStaticQuery, graphql } from "gatsby"
 import SEO from "../components/SEO/SEO.jsx"
 import { ProjectCard } from "../components"
@@ -6,6 +6,48 @@ import "./index.css"
 
 export default function Home() {
   const canvasRef = useRef(null)
+  const dragHintRef = useRef(null)
+  const dragHintIconRef = useRef(null)
+  const dragHintTextRef = useRef(null)
+  const dragHintDismissedRef = useRef(false)
+  const [dragHintDismissed, setDragHintDismissed] = useState(false)
+  const [dragHintVisible, setDragHintVisible] = useState(false)
+
+  useEffect(() => {
+    const t = setTimeout(() => setDragHintVisible(true), 600)
+    return () => clearTimeout(t)
+  }, [])
+
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined
+    let pointerDown = false
+    const markDismissed = () => {
+      if (dragHintDismissedRef.current) return
+      dragHintDismissedRef.current = true
+      setDragHintDismissed(true)
+    }
+    const onDown = () => { pointerDown = true }
+    const onMove = () => {
+      if (pointerDown) markDismissed()
+    }
+    const onUp = () => { pointerDown = false }
+    const onTouchMove = () => markDismissed()
+
+    document.addEventListener("mousedown", onDown)
+    document.addEventListener("mousemove", onMove)
+    document.addEventListener("mouseup", onUp)
+    document.addEventListener("touchstart", onDown, { passive: true })
+    document.addEventListener("touchmove", onTouchMove, { passive: true })
+    document.addEventListener("touchend", onUp, { passive: true })
+    return () => {
+      document.removeEventListener("mousedown", onDown)
+      document.removeEventListener("mousemove", onMove)
+      document.removeEventListener("mouseup", onUp)
+      document.removeEventListener("touchstart", onDown)
+      document.removeEventListener("touchmove", onTouchMove)
+      document.removeEventListener("touchend", onUp)
+    }
+  }, [])
 
   const data = useStaticQuery(graphql`
     query ProjectsQuery {
@@ -128,6 +170,10 @@ export default function Home() {
       uniform float uButtonRadius; // border radius in pixels
       uniform float uButtonOpacity; // opacity for smooth fade during scroll
       uniform bool uHasButton;
+      uniform sampler2D uHintMask;
+      uniform vec4 uHintMaskRect; // left, top, right, bottom in viewport pixels (top-left origin)
+      uniform float uHintOpacity;
+      uniform bool uHasHint;
       varying vec2 vUv;
 
       bool isInsideRoundedRect(vec2 pos, vec4 bounds, float radius) {
@@ -195,6 +241,30 @@ export default function Home() {
             vec3 tinted = gold * intensity * 1.5;
             // Blend between original and tinted based on button opacity
             c = mix(c, tinted, uButtonOpacity);
+          }
+        }
+
+        // Drag hint — draw the letter/icon shape directly into the framebuffer using the mask.
+        // Each pixel is cyan at rest and shifts toward gold based on the fluid splash intensity
+        // sampled at exactly that pixel, so the color change is per-pixel and clearly visible.
+        if (uHasHint && uHintOpacity > 0.0) {
+          vec2 viewportPos = vec2(vUv.x, 1.0 - vUv.y) * uCanvasSize;
+          if (viewportPos.x >= uHintMaskRect.x && viewportPos.x <= uHintMaskRect.z &&
+              viewportPos.y >= uHintMaskRect.y && viewportPos.y <= uHintMaskRect.w) {
+            vec2 maskUv = vec2(
+              (viewportPos.x - uHintMaskRect.x) / (uHintMaskRect.z - uHintMaskRect.x),
+              (viewportPos.y - uHintMaskRect.y) / (uHintMaskRect.w - uHintMaskRect.y)
+            );
+            float maskAlpha = texture2D(uHintMask, maskUv).a;
+            if (maskAlpha > 0.01) {
+              vec3 cyan = vec3(0.0, 0.83, 0.83);
+              vec3 gold = vec3(1.0, 0.78, 0.15);
+              float intensity = clamp(length(c) * 1.6, 0.0, 1.0);
+              vec3 letter = mix(cyan, gold, intensity);
+              // Boost brightness slightly where splash is bright so it pops more
+              letter *= 1.0 + intensity * 0.35;
+              c = mix(c, letter, uHintOpacity * maskAlpha);
+            }
           }
         }
 
@@ -470,6 +540,23 @@ export default function Home() {
     let buttonOpacity = 1.0
     let targetButtonOpacity = 1.0
 
+    // Render WebGL output at device pixel resolution so the rasterised text mask
+    // doesn't get upscaled by the browser (which was the cause of the blur).
+    const dpr = Math.min(window.devicePixelRatio || 1, 2)
+
+    // Drag hint: rasterised mask of the icon + text used to tint fluid in shader
+    let hintOpacity = 0.0
+    let targetHintOpacity = 0.0
+    let hintMaskRect = null
+    const hintMaskCanvas = document.createElement("canvas")
+    const hintMaskCtx = hintMaskCanvas.getContext("2d")
+    const hintMaskTexture = gl.createTexture()
+    gl.bindTexture(gl.TEXTURE_2D, hintMaskTexture)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+
     const updateCvButtonPosition = () => {
       const cvButton = document.querySelector('.cv-link')
       if (cvButton) {
@@ -485,9 +572,81 @@ export default function Home() {
       }
     }
 
+    const updateHintMask = () => {
+      const iconEl = dragHintIconRef.current
+      const textEl = dragHintTextRef.current
+      if (!iconEl && !textEl) {
+        hintMaskRect = null
+        return
+      }
+      const iconRect = iconEl ? iconEl.getBoundingClientRect() : null
+      const textRect = textEl ? textEl.getBoundingClientRect() : null
+      const rects = [iconRect, textRect].filter(Boolean)
+      if (rects.length === 0) {
+        hintMaskRect = null
+        return
+      }
+      const pad = 3
+      const left = Math.floor(Math.min(...rects.map(r => r.left)) - pad)
+      const right = Math.ceil(Math.max(...rects.map(r => r.right)) + pad)
+      const top = Math.floor(Math.min(...rects.map(r => r.top)) - pad)
+      const bottom = Math.ceil(Math.max(...rects.map(r => r.bottom)) + pad)
+      const width = right - left
+      const height = bottom - top
+      if (width <= 0 || height <= 0) {
+        hintMaskRect = null
+        return
+      }
+
+      const pxWidth = Math.round(width * dpr)
+      const pxHeight = Math.round(height * dpr)
+      if (hintMaskCanvas.width !== pxWidth) hintMaskCanvas.width = pxWidth
+      if (hintMaskCanvas.height !== pxHeight) hintMaskCanvas.height = pxHeight
+      hintMaskCtx.setTransform(dpr, 0, 0, dpr, 0, 0)
+      hintMaskCtx.clearRect(0, 0, width, height)
+      hintMaskCtx.fillStyle = "#ffffff"
+
+      if (iconRect) {
+        hintMaskCtx.save()
+        hintMaskCtx.translate(iconRect.left - left, iconRect.top - top)
+        const sx = iconRect.width / 11
+        const sy = iconRect.height / 16
+        hintMaskCtx.scale(sx, sy)
+        hintMaskCtx.beginPath()
+        hintMaskCtx.moveTo(1, 1)
+        hintMaskCtx.lineTo(1, 14)
+        hintMaskCtx.lineTo(4, 11)
+        hintMaskCtx.lineTo(6, 15)
+        hintMaskCtx.lineTo(8, 14)
+        hintMaskCtx.lineTo(6, 10)
+        hintMaskCtx.lineTo(10, 10)
+        hintMaskCtx.closePath()
+        hintMaskCtx.fill()
+        hintMaskCtx.restore()
+      }
+
+      if (textEl && textRect) {
+        const style = window.getComputedStyle(textEl)
+        hintMaskCtx.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`
+        hintMaskCtx.textBaseline = "middle"
+        if ("letterSpacing" in hintMaskCtx) {
+          hintMaskCtx.letterSpacing = style.letterSpacing
+        }
+        const content = (textEl.textContent || "").toUpperCase()
+        const cy = (textRect.top + textRect.bottom) / 2 - top
+        hintMaskCtx.fillText(content, textRect.left - left, cy)
+      }
+
+      hintMaskRect = { left, top, right, bottom }
+      gl.activeTexture(gl.TEXTURE2)
+      gl.bindTexture(gl.TEXTURE_2D, hintMaskTexture)
+      gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false)
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, hintMaskCanvas)
+    }
+
     const initFluid = () => {
-      canvas.width = canvas.clientWidth
-      canvas.height = canvas.clientHeight
+      canvas.width = Math.round(canvas.clientWidth * dpr)
+      canvas.height = Math.round(canvas.clientHeight * dpr)
 
       const simRes = getResolution(SIM_RESOLUTION)
       const dyeRes = getResolution(DYE_RESOLUTION)
@@ -665,11 +824,18 @@ export default function Home() {
       // Smoothly interpolate button opacity
       buttonOpacity += (targetButtonOpacity - buttonOpacity) * 0.15
 
+      // Sync hint visibility with React dismissal state
+      if (dragHintDismissedRef.current) {
+        targetHintOpacity = 0.0
+      }
+      hintOpacity += (targetHintOpacity - hintOpacity) * 0.15
+
       gl.useProgram(programs.display.program)
       gl.uniform1i(programs.display.uniforms.uTexture, dye.read.attach(0))
       gl.uniform1f(programs.display.uniforms.uOpacity, 1.0)
       gl.uniform2f(programs.display.uniforms.uCanvasSize, canvas.clientWidth, canvas.clientHeight)
       gl.uniform1f(programs.display.uniforms.uButtonOpacity, buttonOpacity)
+      gl.uniform1f(programs.display.uniforms.uHintOpacity, hintOpacity)
 
       // Use cached button position to avoid getBoundingClientRect() lag during scroll
       if (cvButtonDocPos) {
@@ -695,6 +861,26 @@ export default function Home() {
         gl.uniform1i(programs.display.uniforms.uHasButton, 0)
       }
 
+      // Drag hint tint via rasterised mask — refresh each frame so it tracks the icon's drift
+      if (hintOpacity > 0.001) {
+        updateHintMask()
+      }
+      if (hintMaskRect && hintOpacity > 0.001) {
+        gl.activeTexture(gl.TEXTURE2)
+        gl.bindTexture(gl.TEXTURE_2D, hintMaskTexture)
+        gl.uniform1i(programs.display.uniforms.uHintMask, 2)
+        gl.uniform4f(
+          programs.display.uniforms.uHintMaskRect,
+          hintMaskRect.left,
+          hintMaskRect.top,
+          hintMaskRect.right,
+          hintMaskRect.bottom
+        )
+        gl.uniform1i(programs.display.uniforms.uHasHint, 1)
+      } else {
+        gl.uniform1i(programs.display.uniforms.uHasHint, 0)
+      }
+
       blit(null)
     }
 
@@ -705,8 +891,8 @@ export default function Home() {
     const updatePointerPos = (pointer, x, y) => {
       pointer.prevX = pointer.x
       pointer.prevY = pointer.y
-      pointer.x = x / canvas.width
-      pointer.y = 1.0 - y / canvas.height
+      pointer.x = x / canvas.clientWidth
+      pointer.y = 1.0 - y / canvas.clientHeight
       pointer.dx = (pointer.x - pointer.prevX) * SPLAT_FORCE
       pointer.dy = (pointer.y - pointer.prevY) * SPLAT_FORCE
     }
@@ -811,8 +997,8 @@ export default function Home() {
         ? { r: 1.0, g: 0.4, b: 0.3 }
         : { r: 0, g: 0.85, b: 0.9 }
 
-      const x = event.clientX / canvas.width
-      const y = 1.0 - event.clientY / canvas.height
+      const x = event.clientX / canvas.clientWidth
+      const y = 1.0 - event.clientY / canvas.clientHeight
 
       for (let i = 0; i < 3; i += 1) {
         const angle = Math.random() * Math.PI * 2
@@ -867,12 +1053,13 @@ export default function Home() {
 
       // For real resize events, update canvas and reinitialize
       if (widthChanged || heightDiff > 0) {
-        canvas.width = newWidth
-        canvas.height = newHeight
+        canvas.width = Math.round(newWidth * dpr)
+        canvas.height = Math.round(newHeight * dpr)
         lastWidth = newWidth
         lastHeight = newHeight
         initFluid()
         updateCvButtonPosition()
+        updateHintMask()
       }
     }
 
@@ -972,9 +1159,18 @@ export default function Home() {
 
     initFluid()
     updateCvButtonPosition()
+    updateHintMask()
+    // Match the CSS fade-in: animation begins at 0.6s, fully visible by ~1.4s
+    const hintFadeInTimeout = setTimeout(() => {
+      if (!dragHintDismissedRef.current) {
+        updateHintMask()
+        targetHintOpacity = 1.0
+      }
+    }, 600)
     animate()
 
     return () => {
+      clearTimeout(hintFadeInTimeout)
       document.removeEventListener("mousedown", handleMouseDown)
       document.removeEventListener("mousemove", handleMouseMove)
       document.removeEventListener("mouseup", handleMouseUp)
@@ -1027,6 +1223,30 @@ export default function Home() {
           <div className="scroll-hint">
             <span>Scroll for more</span>
             <div className="arrow" />
+          </div>
+          <div
+            ref={dragHintRef}
+            className={`drag-hint${dragHintVisible && !dragHintDismissed ? " visible" : ""}${dragHintDismissed ? " dismissed" : ""}`}
+            aria-hidden="true"
+          >
+            <svg
+              ref={dragHintIconRef}
+              className="drag-hint-cursor"
+              width="13"
+              height="17"
+              viewBox="0 0 11 16"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M1 1 L1 14 L4 11 L6 15 L8 14 L6 10 L10 10 Z"
+                fill="rgba(180, 240, 240, 0.95)"
+                stroke="rgba(255, 255, 255, 0.9)"
+                strokeWidth="0.9"
+                strokeLinejoin="round"
+                strokeLinecap="round"
+              />
+            </svg>
+            <span ref={dragHintTextRef}>Drag anywhere</span>
           </div>
         </section>
 
