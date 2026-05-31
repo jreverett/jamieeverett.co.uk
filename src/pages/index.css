@@ -145,11 +145,29 @@ body.no-select {
 }
 
 .hero .subtitle {
+  position: relative;
   color: var(--accent);
   font-size: clamp(1.1rem, 3vw, 1.4rem);
   font-weight: 500;
   letter-spacing: 0.02em;
   margin-bottom: 1.5rem;
+}
+
+/* When the WebGL fluid sim is running, the subtitle glyphs are painted per-pixel
+   (cyan → gold over splashes) onto the overlay canvas, which sits above the hero's
+   legibility scrim. Hide the HTML text so only the overlay shows; falls back to
+   plain cyan text if WebGL is unavailable. */
+.fluid-active .hero .subtitle {
+  color: transparent;
+}
+
+.subtitle-overlay {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
 }
 
 .hero-intro {

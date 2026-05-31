@@ -6,6 +6,8 @@ import "./index.css"
 
 export default function Home() {
   const canvasRef = useRef(null)
+  const subtitleRef = useRef(null)
+  const subtitleOverlayRef = useRef(null)
   const dragHintRef = useRef(null)
   const dragHintIconRef = useRef(null)
   const dragHintTextRef = useRef(null)
@@ -77,7 +79,7 @@ export default function Home() {
               gatsbyImageData(
                 width: 600
                 placeholder: BLURRED
-                formats: [AUTO, WEBP]
+                formats: [AUTO, WEBP, AVIF]
                 layout: CONSTRAINED
               )
             }
@@ -176,6 +178,35 @@ export default function Home() {
       uniform bool uHasHint;
       varying vec2 vUv;
 
+      // Paint a rasterised text/icon mask directly into the framebuffer.
+      // Each masked pixel is cyan at rest and shifts toward gold based on the
+      // fluid splash intensity sampled at exactly that pixel, so the colour
+      // change is per-pixel and clearly visible.
+      vec3 paintMask(vec3 c, sampler2D mask, vec4 rect, float opacity, float sharpen) {
+        if (opacity <= 0.0) return c;
+        vec2 viewportPos = vec2(vUv.x, 1.0 - vUv.y) * uCanvasSize;
+        if (viewportPos.x >= rect.x && viewportPos.x <= rect.z &&
+            viewportPos.y >= rect.y && viewportPos.y <= rect.w) {
+          vec2 maskUv = vec2(
+            (viewportPos.x - rect.x) / (rect.z - rect.x),
+            (viewportPos.y - rect.y) / (rect.w - rect.y)
+          );
+          // Sharpen coverage so glyph interiors paint at full opacity (brighter,
+          // less washed-out over the dark background) while edges stay smooth.
+          float maskAlpha = clamp(texture2D(mask, maskUv).a * sharpen, 0.0, 1.0);
+          if (maskAlpha > 0.01) {
+            vec3 cyan = vec3(0.0, 0.83, 0.83);
+            vec3 gold = vec3(1.0, 0.78, 0.15);
+            float intensity = clamp(length(c) * 1.6, 0.0, 1.0);
+            vec3 letter = mix(cyan, gold, intensity);
+            // Boost brightness slightly where splash is bright so it pops more
+            letter *= 1.0 + intensity * 0.35;
+            c = mix(c, letter, opacity * maskAlpha);
+          }
+        }
+        return c;
+      }
+
       bool isInsideRoundedRect(vec2 pos, vec4 bounds, float radius) {
         // Convert from UV space to pixel space for accurate radius calculation
         vec2 pixelPos = pos * uCanvasSize;
@@ -244,29 +275,9 @@ export default function Home() {
           }
         }
 
-        // Drag hint — draw the letter/icon shape directly into the framebuffer using the mask.
-        // Each pixel is cyan at rest and shifts toward gold based on the fluid splash intensity
-        // sampled at exactly that pixel, so the color change is per-pixel and clearly visible.
-        if (uHasHint && uHintOpacity > 0.0) {
-          vec2 viewportPos = vec2(vUv.x, 1.0 - vUv.y) * uCanvasSize;
-          if (viewportPos.x >= uHintMaskRect.x && viewportPos.x <= uHintMaskRect.z &&
-              viewportPos.y >= uHintMaskRect.y && viewportPos.y <= uHintMaskRect.w) {
-            vec2 maskUv = vec2(
-              (viewportPos.x - uHintMaskRect.x) / (uHintMaskRect.z - uHintMaskRect.x),
-              (viewportPos.y - uHintMaskRect.y) / (uHintMaskRect.w - uHintMaskRect.y)
-            );
-            float maskAlpha = texture2D(uHintMask, maskUv).a;
-            if (maskAlpha > 0.01) {
-              vec3 cyan = vec3(0.0, 0.83, 0.83);
-              vec3 gold = vec3(1.0, 0.78, 0.15);
-              float intensity = clamp(length(c) * 1.6, 0.0, 1.0);
-              vec3 letter = mix(cyan, gold, intensity);
-              // Boost brightness slightly where splash is bright so it pops more
-              letter *= 1.0 + intensity * 0.35;
-              c = mix(c, letter, uHintOpacity * maskAlpha);
-            }
-          }
-        }
+        // Drag hint — paint the glyph/icon shapes directly, per-pixel cyan→gold.
+        // (The subtitle uses a separate DOM overlay canvas above the legibility scrim.)
+        if (uHasHint) c = paintMask(c, uHintMask, uHintMaskRect, uHintOpacity, 1.0);
 
         gl_FragColor = vec4(c * uOpacity, 1.0);
       }
@@ -557,6 +568,22 @@ export default function Home() {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
 
+    // Subtitle: rendered on a separate DOM overlay <canvas> that sits ABOVE the hero's
+    // dark legibility scrim (so it stays bright) and scrolls with the content (so it
+    // never floats). Each frame we read the fluid pixels behind the subtitle out of the
+    // WebGL framebuffer, recolour them cyan→gold by intensity, and mask them to the glyph
+    // shapes — giving the same per-pixel reactive effect as the drag hint, but legible.
+    let subOpacity = 0.0
+    let targetSubOpacity = 0.0
+    // Cached glyph alpha mask for the overlay (built at the overlay's pixel resolution)
+    let subGlyphAlpha = null
+    let subGlyphW = 0
+    let subGlyphH = 0
+    let subReadBuf = null
+    let subImageData = null
+    const subColorCanvas = document.createElement("canvas")
+    const subColorCtx = subColorCanvas.getContext("2d")
+
     const updateCvButtonPosition = () => {
       const cvButton = document.querySelector('.cv-link')
       if (cvButton) {
@@ -642,6 +669,106 @@ export default function Home() {
       gl.bindTexture(gl.TEXTURE_2D, hintMaskTexture)
       gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false)
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, hintMaskCanvas)
+    }
+
+    // Rasterise the subtitle glyphs into an alpha mask sized to the overlay canvas, and
+    // size the overlay to match the subtitle box. Only needed on layout changes
+    // (init / resize / font load); the per-frame loop reuses the cached mask.
+    const buildSubtitleGlyphMask = () => {
+      const el = subtitleRef.current
+      const overlay = subtitleOverlayRef.current
+      if (!el || !overlay) {
+        subGlyphAlpha = null
+        return
+      }
+      const rect = el.getBoundingClientRect()
+      const w = Math.max(1, Math.round(rect.width))
+      const h = Math.max(1, Math.round(rect.height))
+      const pw = Math.round(w * dpr)
+      const ph = Math.round(h * dpr)
+      if (overlay.width !== pw) overlay.width = pw
+      if (overlay.height !== ph) overlay.height = ph
+      if (subColorCanvas.width !== pw) subColorCanvas.width = pw
+      if (subColorCanvas.height !== ph) subColorCanvas.height = ph
+
+      subColorCtx.setTransform(dpr, 0, 0, dpr, 0, 0)
+      subColorCtx.clearRect(0, 0, w, h)
+      subColorCtx.fillStyle = "#ffffff"
+      const style = window.getComputedStyle(el)
+      subColorCtx.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`
+      subColorCtx.textBaseline = "middle"
+      if ("letterSpacing" in subColorCtx) {
+        subColorCtx.letterSpacing = style.letterSpacing
+      }
+      const content = (el.textContent || "").trim()
+      subColorCtx.fillText(content, 0, h / 2)
+
+      const data = subColorCtx.getImageData(0, 0, pw, ph).data
+      subGlyphAlpha = new Uint8ClampedArray(pw * ph)
+      for (let i = 0, j = 3; i < subGlyphAlpha.length; i += 1, j += 4) {
+        subGlyphAlpha[i] = data[j]
+      }
+      subGlyphW = pw
+      subGlyphH = ph
+      subReadBuf = new Uint8Array(pw * ph * 4)
+      subImageData = subColorCtx.createImageData(pw, ph)
+    }
+
+    // Per-frame: read the fluid behind the subtitle out of the WebGL framebuffer,
+    // recolour cyan→gold by intensity, mask to the glyphs, and blit onto the overlay.
+    const CY = [0, 212, 212]
+    const GO = [255, 199, 38]
+    const updateSubtitleOverlay = () => {
+      const el = subtitleRef.current
+      const overlay = subtitleOverlayRef.current
+      if (!el || !overlay || !subGlyphAlpha) return
+      const octx = overlay.getContext("2d")
+      if (!octx) return
+      if (subOpacity < 0.003) {
+        octx.clearRect(0, 0, overlay.width, overlay.height)
+        return
+      }
+      const rect = el.getBoundingClientRect()
+      const ch = canvas.clientHeight
+      const cw = canvas.clientWidth
+      if (rect.bottom <= 0 || rect.top >= ch || rect.right <= 0 || rect.left >= cw) {
+        octx.clearRect(0, 0, overlay.width, overlay.height)
+        return
+      }
+      const pw = subGlyphW
+      const ph = subGlyphH
+      const xfb = Math.round(rect.left * dpr)
+      const yfb = Math.round((ch - rect.bottom) * dpr) // readPixels origin is bottom-left
+      subReadBuf.fill(0)
+      gl.readPixels(xfb, yfb, pw, ph, gl.RGBA, gl.UNSIGNED_BYTE, subReadBuf)
+
+      const out = subImageData.data
+      const fade = Math.min(1, subOpacity)
+      for (let row = 0; row < ph; row += 1) {
+        const srcRow = (ph - 1 - row) * pw // flip Y to match top-left canvas
+        const dstRow = row * pw
+        for (let col = 0; col < pw; col += 1) {
+          const gi = dstRow + col
+          const di = gi * 4
+          const a = subGlyphAlpha[gi]
+          if (a === 0) {
+            out[di + 3] = 0
+            continue
+          }
+          const si = (srcRow + col) * 4
+          const fr = subReadBuf[si] / 255
+          const fg = subReadBuf[si + 1] / 255
+          const fb = subReadBuf[si + 2] / 255
+          let inten = Math.sqrt(fr * fr + fg * fg + fb * fb) * 1.6
+          if (inten > 1) inten = 1
+          const boost = 1 + inten * 0.35
+          out[di] = Math.min(255, (CY[0] + (GO[0] - CY[0]) * inten) * boost)
+          out[di + 1] = Math.min(255, (CY[1] + (GO[1] - CY[1]) * inten) * boost)
+          out[di + 2] = Math.min(255, (CY[2] + (GO[2] - CY[2]) * inten) * boost)
+          out[di + 3] = a * fade
+        }
+      }
+      octx.putImageData(subImageData, 0, 0)
     }
 
     const initFluid = () => {
@@ -829,6 +956,8 @@ export default function Home() {
         targetHintOpacity = 0.0
       }
       hintOpacity += (targetHintOpacity - hintOpacity) * 0.15
+      // Subtitle effect is persistent — fades in once and stays (no scroll fade)
+      subOpacity += (targetSubOpacity - subOpacity) * 0.15
 
       gl.useProgram(programs.display.program)
       gl.uniform1i(programs.display.uniforms.uTexture, dye.read.attach(0))
@@ -882,6 +1011,9 @@ export default function Home() {
       }
 
       blit(null)
+
+      // Subtitle overlay — read the fluid we just drew and paint the glyphs above the scrim
+      updateSubtitleOverlay()
     }
 
     const pointers = []
@@ -1060,6 +1192,7 @@ export default function Home() {
         initFluid()
         updateCvButtonPosition()
         updateHintMask()
+        buildSubtitleGlyphMask()
       }
     }
 
@@ -1145,6 +1278,21 @@ export default function Home() {
       }, 300)
     }
 
+    // Freeze the simulation while the tab is hidden (switched away / minimised) and
+    // resume from exactly where it left off — no reset. All FBO state persists; we
+    // only stop the rAF loop, then reset the clock on return so dt doesn't jump.
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        if (animationFrameId) {
+          window.cancelAnimationFrame(animationFrameId)
+          animationFrameId = null
+        }
+      } else if (!animationFrameId) {
+        lastTime = Date.now()
+        animationFrameId = window.requestAnimationFrame(animate)
+      }
+    }
+
     document.addEventListener("mousedown", handleMouseDown)
     document.addEventListener("mousemove", handleMouseMove)
     document.addEventListener("mouseup", handleMouseUp)
@@ -1152,21 +1300,37 @@ export default function Home() {
     document.addEventListener("touchmove", handleTouchMove, { passive: true })
     document.addEventListener("touchend", handleTouchEnd, { passive: true })
     document.addEventListener("click", handleClick)
+    document.addEventListener("visibilitychange", handleVisibilityChange)
     window.addEventListener("scroll", handleScroll, { passive: true })
     window.addEventListener("resize", debouncedResize)
     canvas.addEventListener("webglcontextlost", handleContextLost, false)
     canvas.addEventListener("webglcontextrestored", handleContextRestored, false)
 
+    // Hand off subtitle colouring to the shader now that WebGL is confirmed
+    document.documentElement.classList.add("fluid-active")
+
     initFluid()
     updateCvButtonPosition()
     updateHintMask()
+    buildSubtitleGlyphMask()
+    targetSubOpacity = 1.0
     // Match the CSS fade-in: animation begins at 0.6s, fully visible by ~1.4s
     const hintFadeInTimeout = setTimeout(() => {
       if (!dragHintDismissedRef.current) {
         updateHintMask()
         targetHintOpacity = 1.0
       }
+      // Re-rasterise the subtitle glyphs once layout has settled after first paint
+      buildSubtitleGlyphMask()
     }, 600)
+
+    // Glyph metrics shift when web fonts finish loading — re-cache once they're ready
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(() => {
+        updateHintMask()
+        buildSubtitleGlyphMask()
+      })
+    }
     animate()
 
     return () => {
@@ -1178,6 +1342,7 @@ export default function Home() {
       document.removeEventListener("touchmove", handleTouchMove)
       document.removeEventListener("touchend", handleTouchEnd)
       document.removeEventListener("click", handleClick)
+      document.removeEventListener("visibilitychange", handleVisibilityChange)
       window.removeEventListener("scroll", handleScroll)
       window.removeEventListener("resize", debouncedResize)
       if (scrollTimeout) {
@@ -1188,6 +1353,7 @@ export default function Home() {
       observer.disconnect()
       clearTimeout(resizeTimeout)
       document.body.classList.remove('no-select')
+      document.documentElement.classList.remove('fluid-active')
       if (animationFrameId) {
         window.cancelAnimationFrame(animationFrameId)
       }
@@ -1203,7 +1369,10 @@ export default function Home() {
         <section className="hero">
           <div className="hero-content">
             <h1>Jamie Everett</h1>
-            <p className="subtitle">Software Engineering Manager</p>
+            <p className="subtitle" ref={subtitleRef}>
+              Software Engineering Manager
+              <canvas className="subtitle-overlay" ref={subtitleOverlayRef} aria-hidden="true" />
+            </p>
             <p className="hero-intro">
               Building robust desktop and cloud applications with 5+ years of experience.
               Currently focused on ultrasonic NDT monitoring systems at Inductosense.
