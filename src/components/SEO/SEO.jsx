@@ -1,16 +1,16 @@
 import React from "react"
-import PropTypes from "prop-types"
-import { Helmet } from "react-helmet"
 import { useStaticQuery, graphql } from "gatsby"
 
+// Returns raw <head> elements for Gatsby's built-in Head API
+// (export const Head = () => <SEO ... />). useStaticQuery is supported in Head.
 export default function SEO({
   title,
-  description,
-  lang,
-  meta,
+  description = "",
   image: metaImage,
   pathname,
   titleTemplate = true,
+  twitterCard = "summary",
+  children,
 }) {
   const { site } = useStaticQuery(graphql`
     query {
@@ -38,43 +38,29 @@ export default function SEO({
   const image = `${siteUrl}${metaImage || defaultImage}`
   const url = `${siteUrl}${pathname || "/"}`
   const canonical = pathname ? `${siteUrl}${pathname}` : null
+  const fullTitle = title
+    ? titleTemplate
+      ? `${title} | ${defaultTitle}`
+      : title
+    : defaultTitle
 
   return (
-    <Helmet
-      title={title}
-      titleTemplate={titleTemplate ? `%s | ${defaultTitle}` : null}
-      link={canonical ? [{ rel: "canonical", href: canonical }] : []}
-      htmlAttributes={{ lang }}
-      meta={[
-        { name: "description", content: metaDescription },
-        { name: "image", content: image },
-        { property: "og:url", content: url },
-        { property: "og:title", content: title },
-        { property: "og:description", content: metaDescription },
-        { property: "og:image", content: image },
-        { property: "og:type", content: "website" },
-        { name: "twitter:card", content: "summary" },
-        { name: "twitter:title", content: title },
-        { name: "twitter:description", content: metaDescription },
-        { name: "twitter:image", content: image },
-        { name: "twitter:creator", content: author },
-      ].concat(meta)}
-    />
+    <>
+      <title>{fullTitle}</title>
+      <meta name="description" content={metaDescription} />
+      <meta name="image" content={image} />
+      <meta property="og:url" content={url} />
+      <meta property="og:title" content={title || defaultTitle} />
+      <meta property="og:description" content={metaDescription} />
+      <meta property="og:image" content={image} />
+      <meta property="og:type" content="website" />
+      <meta name="twitter:card" content={twitterCard} />
+      <meta name="twitter:title" content={title || defaultTitle} />
+      <meta name="twitter:description" content={metaDescription} />
+      <meta name="twitter:image" content={image} />
+      <meta name="twitter:creator" content={author} />
+      {canonical && <link rel="canonical" href={canonical} />}
+      {children}
+    </>
   )
-}
-
-SEO.defaultProps = {
-  lang: "en",
-  meta: [],
-  description: "",
-}
-
-SEO.propTypes = {
-  title: PropTypes.string.isRequired,
-  description: PropTypes.string,
-  lang: PropTypes.string,
-  meta: PropTypes.arrayOf(PropTypes.object),
-  image: PropTypes.string,
-  pathname: PropTypes.string,
-  titleTemplate: PropTypes.bool,
 }

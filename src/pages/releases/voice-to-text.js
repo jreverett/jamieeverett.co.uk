@@ -173,14 +173,7 @@ export default function VoiceToTextReleases() {
 
   return (
     <>
-      <SEO
-        title="Voice-to-Text Downloads"
-        description="Download Voice-to-Text: a local, offline push-to-talk speech-to-text app for Windows, powered by whisper.cpp."
-        image="/og/voice-to-text.png"
-        pathname="/releases/voice-to-text"
-        meta={[{ name: "twitter:card", content: "summary_large_image" }]}
-      />
-      <FluidBackground />
+      <FluidBackground reactiveTitleSelector=".releases-title" />
 
       <div className="releases-page">
         <nav className="releases-nav">
@@ -487,3 +480,14 @@ export default function VoiceToTextReleases() {
     </>
   )
 }
+
+// eslint-disable-next-line react/jsx-pascal-case
+export const Head = () => (
+  <SEO
+    title="Voice-to-Text Downloads"
+    description="Download Voice-to-Text: a local, offline push-to-talk speech-to-text app for Windows, powered by whisper.cpp."
+    image="/og/voice-to-text.png"
+    pathname="/releases/voice-to-text"
+    twitterCard="summary_large_image"
+  />
+)

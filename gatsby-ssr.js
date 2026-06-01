@@ -1,25 +1,21 @@
 import React from "react"
 
-// Fonts are served from jsDelivr (see @font-face in index.css). Open the
-// connection early and preload the weights used in the above-the-fold hero
-// (Regular body, Medium subtitle, SemiBold headline) so first text paint
-// isn't blocked on CSS parse → cold connection → font fetch.
-const FONT_BASE = "https://cdn.jsdelivr.net/npm/geist@1.2.0/dist/fonts/geist-sans"
+// Fonts are self-hosted under /fonts (see @font-face in index.css). Preload the
+// weights used in the above-the-fold hero (Regular body, Medium subtitle,
+// SemiBold headline) so first text paint isn't blocked on CSS parse → font fetch.
+// crossOrigin is required even for same-origin fonts (they're fetched in CORS
+// mode), otherwise the preload wouldn't match the @font-face request.
 const PRELOAD_FONTS = [
-  `${FONT_BASE}/Geist-Regular.woff2`,
-  `${FONT_BASE}/Geist-Medium.woff2`,
-  `${FONT_BASE}/Geist-SemiBold.woff2`,
+  "/fonts/Geist-Regular.woff2",
+  "/fonts/Geist-Medium.woff2",
+  "/fonts/Geist-SemiBold.woff2",
 ]
 
-export const onRenderBody = ({ setHeadComponents, setPostBodyComponents }) => {
-  setHeadComponents([
-    React.createElement("link", {
-      key: "preconnect-jsdelivr",
-      rel: "preconnect",
-      href: "https://cdn.jsdelivr.net",
-      crossOrigin: "anonymous",
-    }),
-    ...PRELOAD_FONTS.map(href =>
+export const onRenderBody = ({ setHtmlAttributes, setHeadComponents, setPostBodyComponents }) => {
+  setHtmlAttributes({ lang: "en" })
+
+  setHeadComponents(
+    PRELOAD_FONTS.map(href =>
       React.createElement("link", {
         key: `preload-${href}`,
         rel: "preload",
@@ -28,8 +24,8 @@ export const onRenderBody = ({ setHeadComponents, setPostBodyComponents }) => {
         href,
         crossOrigin: "anonymous",
       })
-    ),
-  ])
+    )
+  )
 
   // Cloudflare Web Analytics beacon. The token is public (it ships in the client
   // HTML) but read from an env var so it's set per-environment (CF_BEACON_TOKEN in

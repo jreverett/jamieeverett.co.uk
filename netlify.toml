@@ -1,5 +1,12 @@
 [build.environment]
-  NODE_VERSION = "20"
+  NODE_VERSION = "24"
+
+# Self-hosted fonts are content-stable (versioned by the Geist release), so cache
+# them aggressively — otherwise Netlify revalidates them on every visit.
+[[headers]]
+  for = "/fonts/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
 
 # Serve CV at any case variation
 [[redirects]]

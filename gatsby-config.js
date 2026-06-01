@@ -82,7 +82,6 @@ module.exports = {
         path: path.join(__dirname, `src`, `assets`, `images`),
       },
     },
-    `gatsby-plugin-react-helmet`,
     `gatsby-plugin-image`,
     `gatsby-transformer-sharp`,
     `gatsby-plugin-sharp`,

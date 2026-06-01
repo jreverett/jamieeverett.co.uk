@@ -682,25 +682,40 @@ export default function Home() {
         return
       }
       const rect = el.getBoundingClientRect()
-      const w = Math.max(1, Math.round(rect.width))
       const h = Math.max(1, Math.round(rect.height))
+      const content = (el.textContent || "").trim()
+      const style = window.getComputedStyle(el)
+
+      // Measure the actual text width so the overlay (and the per-frame readPixels)
+      // only span the glyphs, not the full left-aligned <p> block (~40% narrower).
+      // measureText is independent of canvas size; set the font before measuring.
+      subColorCtx.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`
+      if ("letterSpacing" in subColorCtx) {
+        subColorCtx.letterSpacing = style.letterSpacing
+      }
+      const textW = subColorCtx.measureText(content).width
+      // +8px guard: measureText returns the advance width, which can slightly
+      // under-measure the final glyph's ink — pad so the last letter never clips.
+      const w = Math.max(1, Math.min(Math.round(rect.width), Math.ceil(textW) + 8))
       const pw = Math.round(w * dpr)
       const ph = Math.round(h * dpr)
+      // Shrink the displayed canvas to the text width (overrides the CSS width:100%)
+      // so the narrower backing store isn't stretched across the whole block.
+      overlay.style.width = `${w}px`
       if (overlay.width !== pw) overlay.width = pw
       if (overlay.height !== ph) overlay.height = ph
       if (subColorCanvas.width !== pw) subColorCanvas.width = pw
       if (subColorCanvas.height !== ph) subColorCanvas.height = ph
 
+      // Resizing a canvas resets its 2D context, so re-establish state before drawing.
       subColorCtx.setTransform(dpr, 0, 0, dpr, 0, 0)
       subColorCtx.clearRect(0, 0, w, h)
       subColorCtx.fillStyle = "#ffffff"
-      const style = window.getComputedStyle(el)
       subColorCtx.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`
       subColorCtx.textBaseline = "middle"
       if ("letterSpacing" in subColorCtx) {
         subColorCtx.letterSpacing = style.letterSpacing
       }
-      const content = (el.textContent || "").trim()
       subColorCtx.fillText(content, 0, h / 2)
 
       const data = subColorCtx.getImageData(0, 0, pw, ph).data
@@ -1362,8 +1377,6 @@ export default function Home() {
 
   return (
     <>
-      {/* eslint-disable-next-line react/jsx-pascal-case */}
-      <SEO title="Jamie Everett - Portfolio" titleTemplate={false} />
       <canvas id="fluid-canvas" ref={canvasRef} />
       <div className="content">
         <section className="hero">
@@ -1618,3 +1631,6 @@ export default function Home() {
     </>
   )
 }
+
+// eslint-disable-next-line react/jsx-pascal-case
+export const Head = () => <SEO title="Jamie Everett - Portfolio" titleTemplate={false} />
