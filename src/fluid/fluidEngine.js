@@ -375,20 +375,33 @@ export function createFluidEngine(canvas, options = {}) {
   let lastTime = Date.now()
   let mouseStartedOnBackground = false
 
+  // Accumulate the drag delta rather than overwriting it, so every pointer move
+  // that lands between two animation frames contributes to the velocity injected
+  // that frame. This ties the injected force to total cursor displacement
+  // regardless of how many moves arrive per frame (i.e. regardless of refresh
+  // rate or mouse polling rate); dx/dy are cleared each frame in animate().
   const updatePointerPos = (pointer, x, y) => {
-    pointer.prevX = pointer.x
-    pointer.prevY = pointer.y
+    const nx = x / canvas.clientWidth
+    const ny = 1.0 - y / canvas.clientHeight
+    pointer.dx += (nx - pointer.x) * SPLAT_FORCE
+    pointer.dy += (ny - pointer.y) * SPLAT_FORCE
+    pointer.x = nx
+    pointer.y = ny
+  }
+
+  // Seat a fresh contact point (mouse-down / touch-start) without producing a
+  // delta, so the first drag frame doesn't splat a spurious jump from the
+  // pointer's stale (or zero) origin.
+  const setPointerPos = (pointer, x, y) => {
     pointer.x = x / canvas.clientWidth
     pointer.y = 1.0 - y / canvas.clientHeight
-    pointer.dx = (pointer.x - pointer.prevX) * SPLAT_FORCE
-    pointer.dy = (pointer.y - pointer.prevY) * SPLAT_FORCE
+    pointer.dx = 0
+    pointer.dy = 0
   }
 
   const createPointer = () => ({
     x: 0,
     y: 0,
-    prevX: 0,
-    prevY: 0,
     dx: 0,
     dy: 0,
     down: false,
@@ -423,7 +436,7 @@ export function createFluidEngine(canvas, options = {}) {
     if (isInteractiveElement(event.target)) return
     const pointer = pointers[0]
     pointer.down = true
-    updatePointerPos(pointer, event.clientX, event.clientY)
+    setPointerPos(pointer, event.clientX, event.clientY)
 
     if (mouseStartedOnBackground) {
       document.body.classList.add("no-select")
@@ -453,7 +466,7 @@ export function createFluidEngine(canvas, options = {}) {
     }
     for (let i = 0; i < touches.length; i += 1) {
       pointers[i].down = true
-      updatePointerPos(pointers[i], touches[i].clientX, touches[i].clientY)
+      setPointerPos(pointers[i], touches[i].clientX, touches[i].clientY)
     }
   }
 
@@ -555,11 +568,25 @@ export function createFluidEngine(canvas, options = {}) {
     const dt = Math.min((now - lastTime) / 1000, 0.016)
     lastTime = now
 
+    // Velocity (dx/dy) is displacement-based and already refresh-rate
+    // independent, so it is injected as-is. Dye, however, is deposited once per
+    // frame, so scale its contribution by the frame's duration to keep the
+    // trail's brightness constant per second of dragging rather than per frame
+    // (a held drag would otherwise read brighter on high-refresh displays).
+    // dx/dy are then cleared so the next frame accumulates fresh.
+    const dragFrameScale = dt * 60
     pointers.forEach(pointer => {
       if (pointer.moved) {
         pointer.moved = false
-        splat(pointer.x, pointer.y, pointer.dx, pointer.dy, pointer.color)
+        const c = pointer.color
+        splat(pointer.x, pointer.y, pointer.dx, pointer.dy, {
+          r: c.r * dragFrameScale,
+          g: c.g * dragFrameScale,
+          b: c.b * dragFrameScale,
+        })
       }
+      pointer.dx = 0
+      pointer.dy = 0
     })
 
     if (Math.random() < AMBIENT_SPLAT_CHANCE * dt * 60) {
