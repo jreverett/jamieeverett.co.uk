@@ -18,6 +18,7 @@
     "lint:fix": "eslint --ext .js,.jsx src/ --fix"
   },
   "dependencies": {
+    "@netlify/blobs": "^10.7.9",
     "gatsby": "^5.16.1",
     "gatsby-plugin-image": "^3.16.0",
     "gatsby-plugin-sharp": "^5.16.0",

@@ -28,3 +28,18 @@
   from = "/cV"
   to = "/cv.pdf"
   status = 200
+
+[functions]
+  directory = "netlify/functions"
+
+# Keep the quiet corner out of the index. X-Robots-Tag is authoritative (unlike a
+# robots.txt Disallow, which can still surface a URL and blocks the noindex fetch).
+[[headers]]
+  for = "/void"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow, noarchive, nosnippet"
+
+[[headers]]
+  for = "/void/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow, noarchive, nosnippet"

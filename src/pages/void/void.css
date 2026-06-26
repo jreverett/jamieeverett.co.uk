@@ -1,0 +1,303 @@
+.void {
+  position: fixed;
+  inset: 0;
+  overflow-y: auto;
+  /* Top-aligned + scroll: vertically centering content taller than the viewport
+     clips the top in flexbox and you can't scroll up to it. */
+  padding: 8vh 20px;
+  background: radial-gradient(circle at 50% 28%, #0d1117 0%, #06090d 62%, #000 100%);
+  color: #c2cdd6;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono",
+    monospace;
+  font-size: 15px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+.void-inner {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.void-sigil {
+  display: inline-block;
+  margin: 0 0 1.4rem;
+  font-size: 1.75rem;
+  color: #00d4d4;
+  animation: void-glow 3.6s ease-in-out infinite,
+    void-spin 18s ease-in-out infinite;
+}
+
+@keyframes void-glow {
+  0%,
+  100% {
+    text-shadow: 0 0 10px rgba(0, 212, 212, 0.3),
+      0 0 22px rgba(0, 212, 212, 0.12);
+  }
+  50% {
+    text-shadow: 0 0 22px rgba(0, 212, 212, 0.7),
+      0 0 42px rgba(0, 212, 212, 0.32);
+  }
+}
+
+@keyframes void-spin {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  50% {
+    transform: rotate(180deg) scale(1.12);
+  }
+  100% {
+    transform: rotate(360deg) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .void-sigil {
+    animation: none;
+    text-shadow: 0 0 16px rgba(0, 212, 212, 0.5);
+  }
+}
+
+/* success mark on the endgame — a one-time pop, no spinning */
+.void-mark {
+  display: inline-block;
+  margin: 0 0 1.4rem;
+  font-size: 1.9rem;
+  color: #5fd0a0;
+  text-shadow: 0 0 18px rgba(95, 208, 160, 0.55);
+  animation: void-pop 0.5s ease-out both;
+}
+
+@keyframes void-pop {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .void-mark {
+    animation: none;
+  }
+}
+
+.void-lede {
+  margin: 0 0 2.6rem;
+  max-width: 52ch;
+  color: #818d98;
+  line-height: 1.7;
+}
+
+/* Each puzzle element is its own framed panel so the page reads as distinct
+   pieces rather than one wall of text. */
+.void-block {
+  margin: 0 0 1.4rem;
+  padding: 1.15rem 1.3rem;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 8px;
+}
+
+.void-stanza {
+  margin: 0;
+}
+
+.void-line {
+  margin: 0.22rem 0;
+  color: #aab6c0;
+}
+
+.void-hint {
+  margin: 1rem 0 0;
+  padding-top: 0.85rem;
+  border-top: 1px dashed rgba(255, 255, 255, 0.09);
+  color: #5c656f;
+  font-style: italic;
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.void-cipher {
+  margin: 0 0 1.4rem;
+  padding: 1.2rem 1.3rem;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 8px;
+  color: #b9d2d6;
+  font-family: inherit;
+  font-size: 0.92rem;
+  letter-spacing: 0.16em;
+  line-height: 1.95;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.void-rule {
+  border: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin: 2.6rem 0 2rem;
+}
+
+.void-seal {
+  margin: 0;
+  text-align: center;
+}
+
+.void-seal img {
+  width: 220px;
+  max-width: 64%;
+  height: auto;
+  opacity: 0.92;
+  border-radius: 4px;
+  image-rendering: pixelated;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+.void-cap {
+  margin: 0.8rem 0 0;
+  color: #4d5660;
+  font-size: 0.74rem;
+  letter-spacing: 0.04em;
+}
+
+/* end / submission */
+.void-form,
+.void-hall {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.void-input {
+  width: 100%;
+  margin: 0 0 1rem;
+  padding: 0.7rem 0.9rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  color: #e6edf3;
+  font-family: inherit;
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
+  outline: none;
+}
+
+.void-input:focus {
+  border-color: #00d4d4;
+  box-shadow: 0 0 0 1px rgba(0, 212, 212, 0.3);
+}
+
+.void-btn {
+  padding: 0.55rem 1.4rem;
+  background: transparent;
+  border: 1px solid #00d4d4;
+  border-radius: 3px;
+  color: #00d4d4;
+  font-family: inherit;
+  font-size: 0.9rem;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.void-btn:hover {
+  background: #00d4d4;
+  color: #06090d;
+}
+
+.void-form-inline {
+  display: flex;
+  gap: 0.6rem;
+  width: 100%;
+  margin: 0.4rem 0 1.6rem;
+}
+
+.void-form-inline .void-input {
+  margin: 0;
+}
+
+.void-roll {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.void-roll li {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  color: #aab6c0;
+  font-size: 0.9rem;
+}
+
+.void-date {
+  color: #5c656f;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+/* brief outline pulse on the row you just signed */
+.void-roll-new {
+  border-radius: 4px;
+  animation: void-row-pulse 1.4s ease-out;
+}
+
+@keyframes void-row-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(95, 208, 160, 0.7);
+    background: rgba(95, 208, 160, 0.16);
+  }
+  100% {
+    box-shadow: 0 0 0 10px rgba(95, 208, 160, 0);
+    background: rgba(95, 208, 160, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .void-roll-new {
+    animation: none;
+    background: rgba(95, 208, 160, 0.12);
+  }
+}
+
+.confetti-bit {
+  position: fixed;
+  width: 8px;
+  height: 8px;
+  border-radius: 1px;
+  pointer-events: none;
+  z-index: 9999;
+  will-change: transform, opacity;
+  animation: confetti-fly var(--life, 0.9s) cubic-bezier(0.2, 0.6, 0.3, 1) forwards;
+}
+
+@keyframes confetti-fly {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--dx), calc(var(--dy) + 260px)) rotate(var(--rot));
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .confetti-bit {
+    display: none;
+  }
+}

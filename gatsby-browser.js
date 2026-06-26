@@ -17,3 +17,15 @@ export const shouldUpdateScroll = ({
   }
   return false
 }
+
+// A note for anyone who opens the console. Most visitors never will.
+export const onClientEntry = () => {
+  if (typeof window === "undefined") return
+  const ink = "color:#00d4d4;font:600 13px/1.6 ui-monospace,monospace"
+  const dim = "color:#55606b;font:12px/1.6 ui-monospace,monospace"
+  console.log("%c// seasoned, then hashed.", ink)
+  console.log(
+    "%cnot everything here renders. the rest was salted away — ask the robots.",
+    dim
+  )
+}
