@@ -61,6 +61,29 @@ function writeFallback(roll) {
   }
 }
 
+// Best-effort email alert on a genuine solve, via Resend. Recipient, sender, and
+// key are env vars (kept out of this public repo); silently no-ops if unset.
+async function notify(entry) {
+  const key = process.env.RESEND_API_KEY
+  const to = process.env.ALERT_TO
+  if (!key || !to) return
+  try {
+    await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        from: process.env.ALERT_FROM || "THE TRAIL <onboarding@resend.dev>",
+        to: [to],
+        subject: `🧂 Someone solved THE TRAIL — ${entry.name}`,
+        text: `${entry.name} just signed the Hall of Fame.\n\nWhen: ${new Date(entry.ts).toUTCString()}\nHall: https://www.jamieeverett.co.uk/void/end`,
+      }),
+      signal: AbortSignal.timeout(5000),
+    })
+  } catch (e) {
+    // never let the alert break the submission
+  }
+}
+
 async function underRateLimit(store, event) {
   if (!store) return true // no durable counter locally; don't block testing
   try {
@@ -118,7 +141,8 @@ exports.handler = async event => {
     !roll.some(e => e.name.toLowerCase() === name.toLowerCase()) &&
     (await underRateLimit(store, event))
   ) {
-    roll.push({ name, ts: Date.now() })
+    const entry = { name, ts: Date.now() }
+    roll.push(entry)
     if (store) {
       try {
         await store.setJSON("roll", roll)
@@ -128,6 +152,7 @@ exports.handler = async event => {
     } else {
       writeFallback(roll)
     }
+    await notify(entry)
   }
 
   const hall = roll.slice().sort((a, b) => (b.ts || 0) - (a.ts || 0))
