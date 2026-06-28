@@ -22,7 +22,7 @@ export const shouldUpdateScroll = ({
 export const onClientEntry = () => {
   if (typeof window === "undefined") return
   console.log(
-    "%cnot everything here renders. the rest is salted away in robots.txt.",
+    "%cnot everything here renders. the robots were left a note.",
     "color:#00d4d4;font:700 14px/1.6 ui-monospace,monospace"
   )
 }
