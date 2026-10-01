@@ -8,13 +8,21 @@ import {
   events,
   restore,
   MODES,
+  alarms,
+  channelPower,
+  canRestart,
+  shutdown,
+  restart,
 } from "../../static/nuclear/model.mjs";
 const run = (state, seconds) => {
   for (let i = 0; i < seconds * 20; i++) step(state, 0.05);
   return state;
 };
 test("heat and output lag a reactor increase", () => {
-  const state = Object.assign(initialState(), { reactor: 90 });
+  const state = Object.assign(initialState(), {
+    reactor: 90,
+    rods: [90, 90, 90],
+  });
   run(state, 1);
   assert.ok(state.heat > 58 && state.heat < 64);
   assert.ok(state.output < 650);
@@ -33,7 +41,11 @@ test("inadequate cooling trips the reactor and cooling permits recovery", () => 
   assert.ok(state.output < 1);
 });
 test("cooling restores output when condenser heat limits generation", () => {
-  const limited = Object.assign(initialState(), { reactor: 85, cooling: 45 });
+  const limited = Object.assign(initialState(), {
+    reactor: 85,
+    rods: [85, 85, 85],
+    cooling: 45,
+  });
   run(limited, 35);
   const improved = structuredClone(limited);
   improved.cooling = 100;
@@ -47,7 +59,11 @@ test("closing the turbine reduces electricity without instantly removing heat", 
   const state = Object.assign(initialState(), { turbine: 0 });
   run(state, 30);
   assert.ok(state.output < 1);
-  assert.equal(state.heat, 58);
+  assert.ok(
+    state.heat < 58,
+    "the closed turbine eventually causes a pressure trip",
+  );
+  assert.equal(state.tripReason, "High steam pressure");
 });
 test("the breaker removes grid output and allows reconnection", () => {
   const state = Object.assign(initialState(), { breaker: false });
@@ -115,6 +131,7 @@ test("extreme controls remain finite and bounded across a shift", () => {
     for (const cooling of [0, 100]) {
       const state = Object.assign(initialState(), {
         reactor,
+        rods: [reactor, reactor, reactor],
         cooling,
         speed: 6,
       });
@@ -124,4 +141,90 @@ test("extreme controls remain finite and bounded across a shift", () => {
       assert.ok(state.temperature <= 370);
       assert.ok(state.output >= 0 && state.output < 1100);
     }
+});
+test("separate rod banks change their channels and expose imbalance", () => {
+  const state = initialState();
+  state.rods = [10, 58, 90];
+  run(state, 20);
+  assert.ok(channelPower(state, 4, 1) < channelPower(state, 4, 7) - 35);
+  assert.ok(alarms(state).find((a) => a.id === "banks").level > 0);
+  state.rods = [50, 50, 50];
+  run(state, 100);
+  assert.equal(alarms(state).find((a) => a.id === "banks").level, 0);
+});
+test("stopping primary pumps causes heat removal failure", () => {
+  const state = initialState();
+  state.pumps = [false, false];
+  assert.equal(alarms(state).find((a) => a.id === "pumps").level, 2);
+  run(state, 60);
+  assert.equal(state.tripReason, "High core temperature");
+  assert.equal(canRestart(state), false);
+  state.pumps = [true, true];
+  state.cooling = 100;
+  run(state, 120);
+  assert.equal(canRestart(state), true);
+  assert.equal(restart(state), true);
+  assert.deepEqual(state.rods, [35, 35, 35]);
+});
+test("bypass relieves pressure but costs generator output", () => {
+  const state = initialState();
+  state.turbine = 15;
+  run(state, 12);
+  const pressure = state.pressure;
+  assert.ok(pressure > 80);
+  state.bypass = true;
+  run(state, 30);
+  assert.ok(state.pressure < pressure - 10);
+  assert.equal(state.tripped, false);
+  const normal = run(initialState(), 40),
+    bypass = initialState();
+  bypass.bypass = true;
+  run(bypass, 40);
+  assert.ok(bypass.output < normal.output * 0.6);
+});
+test("manual feedwater can starve the drum and automatic feed recovers it", () => {
+  const state = initialState();
+  state.feedAuto = false;
+  state.feedwater = 0;
+  run(state, 15);
+  assert.ok(state.water < 45);
+  assert.ok(alarms(state).find((a) => a.id === "water").level > 0);
+  const starved = structuredClone(state);
+  run(starved, 70);
+  assert.equal(starved.tripReason, "Low steam drum level");
+  state.feedAuto = true;
+  run(state, 90);
+  assert.ok(state.water > 60);
+  assert.equal(state.tripped, false);
+});
+test("restart checks pressure and water as well as temperature", () => {
+  const state = initialState();
+  shutdown(state);
+  state.pressure = 90;
+  assert.equal(restart(state), false);
+  state.pressure = 60;
+  state.water = 20;
+  assert.equal(restart(state), false);
+  state.water = 62;
+  assert.equal(restart(state), true);
+});
+test("first version saves migrate to balanced rod banks", () => {
+  const legacy = {
+    ...initialState("standard"),
+    version: 1,
+    reactor: 75,
+    heat: 72,
+  };
+  const state = restore(JSON.stringify(legacy));
+  assert.equal(state.version, 2);
+  assert.equal(state.mode, "standard");
+  assert.deepEqual(state.rods, [75, 75, 75]);
+  assert.deepEqual(state.bankHeat, [72, 72, 72]);
+});
+test("difficulty remains unchanged while operating", () => {
+  const state = initialState("challenging");
+  state.pumps = [false, true];
+  run(state, 100);
+  assert.equal(state.mode, "challenging");
+  assert.equal(restore(JSON.stringify(state)).mode, "challenging");
 });

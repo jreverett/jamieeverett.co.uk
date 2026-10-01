@@ -7,6 +7,13 @@ import {
   MODES,
   restore,
   step,
+  alarms,
+  channelPower,
+  hotspot,
+  pumpFlow,
+  canRestart,
+  shutdown,
+  restart,
 } from "./model.mjs";
 import { createScene } from "./scene.mjs";
 const $ = (id) => document.getElementById(id);
@@ -18,6 +25,10 @@ try {
   $("save-status").textContent = "SAVING UNAVAILABLE";
 }
 let state = stored ? restore(stored) : initialState();
+let hasStarted = false,
+  returnPaused = state.paused,
+  tutorialIndex = -1,
+  tutorialWasPaused = false;
 let lowMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 let visualTime = 0,
   last = 0,
@@ -25,171 +36,12 @@ let visualTime = 0,
   lastSave = 0,
   lastHistory = -Infinity,
   previousNews = "",
-  rotor = 0;
-let guideWasPaused = state.paused;
-const scene = createScene($("landscape"));
-const chart = $("chart");
-const ctx = chart.getContext("2d");
-let chartWidth = 0,
-  chartHeight = 0;
-new ResizeObserver(() => {
-  chartWidth = chart.clientWidth;
-  chartHeight = chart.clientHeight;
-  const ratio = Math.min(devicePixelRatio || 1, 1.5);
-  chart.width = Math.round(chartWidth * ratio);
-  chart.height = Math.round(chartHeight * ratio);
-  ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
-  drawChart();
-}).observe(chart);
-function save() {
-  try {
-    localStorage.setItem(
-      KEY,
-      JSON.stringify({
-        ...state,
-        history: [],
-        paused: $("guide").open ? guideWasPaused : state.paused,
-      }),
-    );
-    $("save-status").textContent = "SHIFT SAVED ON THIS DEVICE";
-  } catch {
-    $("save-status").textContent = "SAVING UNAVAILABLE";
-  }
-}
-function syncControls() {
-  for (const key of ["reactor", "turbine", "cooling"]) {
-    $(key).value = state[key];
-    $(key).style.setProperty("--value", `${state[key]}%`);
-    $(`${key}-value`).innerHTML = `${state[key]}<span>%</span>`;
-  }
-  $("difficulty").value = state.mode;
-  $("pause").textContent = state.paused ? "▶" : "Ⅱ";
-  $("pause").setAttribute(
-    "aria-label",
-    state.paused ? "Resume simulation" : "Pause simulation",
-  );
-  $("pause").setAttribute("aria-pressed", String(state.paused));
-  document.querySelectorAll("[data-speed]").forEach((button) => {
-    const selected = Number(button.dataset.speed) === state.speed;
-    button.classList.toggle("selected", selected);
-    button.setAttribute("aria-pressed", String(selected));
-  });
-  $("reactor").disabled = state.tripped;
-  $("breaker").innerHTML =
-    `<span class="live-dot"></span> GRID ${state.breaker ? "CONNECTED" : "DISCONNECTED"}`;
-  $("breaker").setAttribute("aria-pressed", String(state.breaker));
-  $("trip").textContent = state.tripped
-    ? state.temperature >= 305
-      ? "COOLING DOWN"
-      : "RESTART"
-    : "SHUT DOWN";
-  $("trip").disabled = state.tripped && state.temperature >= 305;
-  document.body.classList.toggle("paused", state.paused);
-  document.body.classList.toggle("low-motion", lowMotion);
-  $("motion").setAttribute("aria-pressed", String(lowMotion));
-}
-for (const key of ["reactor", "turbine", "cooling"])
-  $(key).addEventListener("input", (event) => {
-    state[key] = Number(event.target.value);
-    syncControls();
-    updateUI();
-  });
-$("pause").addEventListener("click", () => {
-  state.paused = !state.paused;
-  syncControls();
-  save();
-});
-document.querySelectorAll("[data-speed]").forEach((button) =>
-  button.addEventListener("click", () => {
-    state.speed = Number(button.dataset.speed);
-    syncControls();
-  }),
-);
-$("difficulty").addEventListener("change", (event) => {
-  state.mode = event.target.value;
-  state.matched = 0;
-  state.elapsed = 0;
-  state.best = 0;
-  previousNews = "";
-  updateUI();
-});
-$("breaker").addEventListener("click", () => {
-  state.breaker = !state.breaker;
-  syncControls();
-  updateUI();
-});
-$("trip").addEventListener("click", () => {
-  if (state.tripped && state.temperature < 305) {
-    state.tripped = false;
-    state.reactor = 35;
-  } else {
-    state.tripped = true;
-    state.reactor = 0;
-  }
-  syncControls();
-  updateUI();
-  save();
-});
-$("motion").addEventListener("click", () => {
-  lowMotion = !lowMotion;
-  syncControls();
-});
-for (const [id, delta] of [
-  ["look-left", -20],
-  ["look-right", 20],
-])
-  $(id).addEventListener("click", () => {
-    $("bearing").textContent =
-      `${String(scene.look(delta)).padStart(3, "0")}° E`;
-  });
-function showGuide() {
-  guideWasPaused = state.paused;
-  state.paused = true;
-  $("guide").showModal();
-  syncControls();
-}
-$("help").addEventListener("click", showGuide);
-$("start").addEventListener("click", () => $("guide").close());
-$("guide").addEventListener("close", () => {
-  state.paused = guideWasPaused;
-  syncControls();
-  save();
-});
-let resetWasPaused = false;
-$("reset").addEventListener("click", () => {
-  resetWasPaused = state.paused;
-  state.paused = true;
-  $("reset-dialog").showModal();
-  syncControls();
-});
-$("cancel-reset").addEventListener("click", () => $("reset-dialog").close());
-$("reset-dialog").addEventListener("close", () => {
-  state.paused = resetWasPaused;
-  syncControls();
-});
-$("confirm-reset").addEventListener("click", () => {
-  state = initialState();
-  resetWasPaused = false;
-  previousNews = "";
-  lastHistory = -Infinity;
-  $("reset-dialog").close();
-  syncControls();
-  updateUI();
-  save();
-});
-document.addEventListener("keydown", (event) => {
-  if (
-    event.code === "Space" &&
-    !["INPUT", "BUTTON", "SELECT", "SUMMARY"].includes(
-      document.activeElement.tagName,
-    ) &&
-    !$("guide").open &&
-    !$("reset-dialog").open
-  ) {
-    event.preventDefault();
-    $("pause").click();
-  }
-});
+  selectedAlarm = null;
+let acknowledged = new Map(),
+  previousLevels = new Map(),
+  sound = false,
+  audioContext = null,
+  lastChime = 0;
 const timeFormat = new Intl.DateTimeFormat("en-GB", {
   hour: "2-digit",
   minute: "2-digit",
@@ -202,6 +54,413 @@ const dateFormat = new Intl.DateTimeFormat("en-GB", {
   year: "numeric",
   timeZone: "UTC",
 });
+const scene = createScene($("landscape"));
+const chart = $("chart"),
+  ctx = chart.getContext("2d");
+let chartWidth = 0,
+  chartHeight = 0;
+new ResizeObserver(() => {
+  chartWidth = chart.clientWidth;
+  chartHeight = chart.clientHeight;
+  const ratio = Math.min(devicePixelRatio || 1, 1.5);
+  chart.width = Math.round(chartWidth * ratio);
+  chart.height = Math.round(chartHeight * ratio);
+  ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+  drawChart();
+}).observe(chart);
+const cells = [];
+for (let row = 0; row < 9; row++)
+  for (let col = 0; col < 9; col++) {
+    const cell = document.createElement("span");
+    cell.className = "fuel-cell";
+    if (Math.hypot(row - 4, col - 4) > 5) cell.classList.add("blank");
+    $("fuel-grid").append(cell);
+    cells.push({ cell, row, col });
+  }
+for (let i = 0; i < 3; i++) {
+  const bank = document.createElement("div");
+  bank.className = "rod-bank";
+  bank.innerHTML = `<label>BANK ${"ABC"[i]}</label><output id="bank-${i}-value">58%</output><div class="bank-buttons"><button data-bank="${i}" data-delta="-5" aria-label="Insert bank ${"ABC"[i]} rods">−</button><button data-bank="${i}" data-delta="5" aria-label="Withdraw bank ${"ABC"[i]} rods">+</button></div>`;
+  $("rod-banks").append(bank);
+}
+for (const alarm of alarms(state)) {
+  const button = document.createElement("button");
+  button.className = "annunciator";
+  button.id = `alarm-${alarm.id}`;
+  button.innerHTML = `<span>${alarm.label}</span><strong>NORMAL</strong>`;
+  button.addEventListener("click", () => {
+    selectedAlarm = alarm.id;
+    updateAlarms();
+  });
+  $("annunciators").append(button);
+}
+function save() {
+  if (!hasStarted || $("setup").open) return;
+  try {
+    stored = JSON.stringify({
+      ...state,
+      history: [],
+      paused: tutorialIndex >= 0 ? tutorialWasPaused : state.paused,
+    });
+    localStorage.setItem(KEY, stored);
+    $("save-status").textContent = "SHIFT SAVED ON THIS DEVICE";
+  } catch {
+    $("save-status").textContent = "SAVING UNAVAILABLE";
+  }
+}
+function syncControls() {
+  for (const key of ["turbine", "cooling"]) {
+    $(key).value = state[key];
+    $(key).style.setProperty("--value", `${state[key]}%`);
+    $(`${key}-value`).textContent = `${state[key]}%`;
+  }
+  for (let i = 0; i < 3; i++)
+    $(`bank-${i}-value`).textContent = `${state.rods[i]}%`;
+  document
+    .querySelectorAll("[data-bank]")
+    .forEach((button) => (button.disabled = state.tripped));
+  $("equalise").disabled = state.tripped;
+  $("difficulty").textContent = `${state.mode.toUpperCase()} SHIFT · LOCKED`;
+  $("pause").textContent = state.paused ? "▶" : "Ⅱ";
+  $("pause").setAttribute(
+    "aria-label",
+    state.paused ? "Resume simulation" : "Pause simulation",
+  );
+  $("pause").disabled = tutorialIndex >= 0;
+  document.querySelectorAll("[data-speed]").forEach((button) => {
+    const active = Number(button.dataset.speed) === state.speed;
+    button.classList.toggle("selected", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
+  for (const [i, id] of ["pump-a", "pump-b"].entries()) {
+    $(id).setAttribute("aria-pressed", String(state.pumps[i]));
+    $(id).querySelector("strong").textContent = state.pumps[i] ? "RUN" : "STOP";
+  }
+  $("feed-auto").setAttribute("aria-pressed", String(state.feedAuto));
+  $("feed-manual").setAttribute("aria-pressed", String(!state.feedAuto));
+  $("feed-less").disabled = state.feedAuto;
+  $("feed-more").disabled = state.feedAuto;
+  $("feedwater-value").textContent = state.feedAuto
+    ? "AUTO"
+    : `${state.feedwater}%`;
+  $("bypass").setAttribute("aria-pressed", String(state.bypass));
+  $("bypass").querySelector("strong").textContent = state.bypass
+    ? "OPEN"
+    : "CLOSED";
+  $("breaker").innerHTML =
+    `<span class="live-dot"></span> GRID ${state.breaker ? "CONNECTED" : "DISCONNECTED"}`;
+  $("breaker").setAttribute("aria-pressed", String(state.breaker));
+  $("trip").textContent = state.tripped
+    ? canRestart(state)
+      ? "RESTART"
+      : "RESTART LOCKED"
+    : "EMERGENCY STOP";
+  $("trip").disabled = state.tripped && !canRestart(state);
+  document.body.classList.toggle("paused", state.paused);
+  document.body.classList.toggle("low-motion", lowMotion);
+  $("motion").setAttribute("aria-pressed", String(lowMotion));
+}
+function change(action) {
+  action();
+  syncControls();
+  updateUI();
+  save();
+}
+document.querySelectorAll("[data-bank]").forEach((button) =>
+  button.addEventListener("click", () =>
+    change(() => {
+      const i = Number(button.dataset.bank);
+      state.rods[i] = clamp(
+        state.rods[i] + Number(button.dataset.delta),
+        0,
+        100,
+      );
+    }),
+  ),
+);
+$("equalise").addEventListener("click", () =>
+  change(() => {
+    const mean = Math.round(state.rods.reduce((a, b) => a + b, 0) / 3);
+    state.rods = [mean, mean, mean];
+  }),
+);
+for (const key of ["turbine", "cooling"])
+  $(key).addEventListener("input", (event) =>
+    change(() => (state[key] = Number(event.target.value))),
+  );
+for (const [i, id] of ["pump-a", "pump-b"].entries())
+  $(id).addEventListener("click", () =>
+    change(() => (state.pumps[i] = !state.pumps[i])),
+  );
+$("feed-auto").addEventListener("click", () =>
+  change(() => (state.feedAuto = true)),
+);
+$("feed-manual").addEventListener("click", () =>
+  change(() => (state.feedAuto = false)),
+);
+$("feed-less").addEventListener("click", () =>
+  change(() => (state.feedwater = clamp(state.feedwater - 5, 0, 100))),
+);
+$("feed-more").addEventListener("click", () =>
+  change(() => (state.feedwater = clamp(state.feedwater + 5, 0, 100))),
+);
+$("bypass").addEventListener("click", () =>
+  change(() => (state.bypass = !state.bypass)),
+);
+$("breaker").addEventListener("click", () =>
+  change(() => (state.breaker = !state.breaker)),
+);
+$("trip").addEventListener("click", () =>
+  change(() => (state.tripped ? restart(state) : shutdown(state))),
+);
+$("pause").addEventListener("click", () =>
+  change(() => (state.paused = !state.paused)),
+);
+document
+  .querySelectorAll("[data-speed]")
+  .forEach((button) =>
+    button.addEventListener("click", () =>
+      change(() => (state.speed = Number(button.dataset.speed))),
+    ),
+  );
+$("motion").addEventListener("click", () => {
+  lowMotion = !lowMotion;
+  syncControls();
+});
+for (const [id, delta] of [
+  ["look-left", -20],
+  ["look-right", 20],
+])
+  $(id).addEventListener("click", () => {
+    $("bearing").textContent =
+      `${String(scene.look(delta)).padStart(3, "0")}° E`;
+  });
+function chime() {
+  if (
+    !sound ||
+    !audioContext ||
+    state.paused ||
+    document.hidden ||
+    performance.now() - lastChime < 2500
+  )
+    return;
+  lastChime = performance.now();
+  const tone = audioContext.createOscillator(),
+    gain = audioContext.createGain();
+  tone.connect(gain);
+  gain.connect(audioContext.destination);
+  tone.frequency.value = 580;
+  gain.gain.setValueAtTime(0.035, audioContext.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.3);
+  tone.start();
+  tone.stop(audioContext.currentTime + 0.3);
+}
+$("sound").addEventListener("click", async () => {
+  sound = !sound;
+  try {
+    if (sound) {
+      audioContext ??= new AudioContext();
+      await audioContext.resume();
+    }
+  } catch {
+    sound = false;
+  }
+  $("sound").textContent = `ALARM SOUND ${sound ? "ON" : "OFF"}`;
+  $("sound").setAttribute("aria-pressed", String(sound));
+});
+$("acknowledge").addEventListener("click", () => {
+  for (const alarm of alarms(state))
+    if (alarm.level) acknowledged.set(alarm.id, alarm.level);
+  updateAlarms();
+});
+function updateAlarms() {
+  const list = alarms(state);
+  for (const alarm of list) {
+    if (previousLevels.get(alarm.id) !== alarm.level) {
+      acknowledged.delete(alarm.id);
+      if (alarm.level) chime();
+      previousLevels.set(alarm.id, alarm.level);
+    }
+    const button = $(`alarm-${alarm.id}`),
+      ack = acknowledged.get(alarm.id) === alarm.level && alarm.level > 0;
+    button.dataset.level = alarm.level;
+    button.classList.toggle("unacknowledged", alarm.level > 0 && !ack);
+    button.classList.toggle("acknowledged", ack);
+    button.classList.toggle("selected", selectedAlarm === alarm.id);
+    button.querySelector("strong").textContent =
+      alarm.level === 2 ? "ALARM" : alarm.level === 1 ? "CAUTION" : "NORMAL";
+    button.setAttribute(
+      "aria-label",
+      `${alarm.label}: ${alarm.level === 2 ? "alarm" : alarm.level === 1 ? "caution" : "normal"}, ${alarm.value}${ack ? ", acknowledged" : ""}`,
+    );
+    button.setAttribute("aria-pressed", String(selectedAlarm === alarm.id));
+  }
+  const active = list
+    .filter((alarm) => alarm.level)
+    .sort((a, b) => b.level - a.level);
+  const detail = selectedAlarm
+    ? list.find((alarm) => alarm.id === selectedAlarm)
+    : active[0];
+  $("alarm-title").textContent = detail
+    ? `${detail.label} · ${detail.value.toUpperCase()}`
+    : "ALL SYSTEMS NORMAL";
+  const advice = detail
+    ? detail.action
+    : "Select a tile for operating guidance. New faults flash until acknowledged; a lit tile stays on until its cause is fixed.";
+  if ($("alarm-advice").textContent !== advice)
+    $("alarm-advice").textContent = advice;
+  $("acknowledge").disabled = !active.some(
+    (alarm) => acknowledged.get(alarm.id) !== alarm.level,
+  );
+}
+const lessons = [
+  [
+    ".grid-panel",
+    "Match the demand",
+    "Keep your output near grid demand. The dotted line forecasts the next three hours. Make small changes, then wait for heat and steam to respond.",
+  ],
+  [
+    "#rod-console",
+    "Three banks. One reactor.",
+    "Withdraw rods (+) to make more heat. Insert them (−) to reduce heat. Each bank controls one vertical third of the glowing grid. Keep the banks close together.",
+  ],
+  [
+    "#support-controls",
+    "Move heat. Keep water available.",
+    "Both pumps carry heat away from the core. Cooling flow removes waste heat. Automatic feedwater holds drum level near 62%. In manual mode, use −/+ to adjust the water supply.",
+  ],
+  [
+    "#steam-controls",
+    "Put the steam to work",
+    "The turbine valve changes electrical output. Closing it can raise steam pressure. Open the bypass to relieve pressure; it wastes steam and reduces electricity. Close it when pressure is safe.",
+  ],
+  [
+    "#alarm-panel",
+    "Read the warning wall",
+    "Amber means caution; red means act now. Select a tile for the cause and remedy. Acknowledge stops the flash, not the fault. Emergency Stop inserts all rods; keep cooling on.",
+  ],
+  [
+    "#news-ticker",
+    "Prepare for the next headline",
+    "The Wire hints at demand changes. Hover to pause the feed, or open it to read the stories. Pause the shift whenever you need. Your difficulty stays fixed for this run.",
+  ],
+];
+function showLesson(index) {
+  document
+    .querySelectorAll(".tutorial-target")
+    .forEach((el) => el.classList.remove("tutorial-target"));
+  tutorialIndex = index;
+  const [selector, title, copy] = lessons[index],
+    target = document.querySelector(selector);
+  target.classList.add("tutorial-target");
+  $("tutorial").hidden = false;
+  $("tutorial-title").textContent = title;
+  $("tutorial-text").textContent = copy;
+  $("tutorial-step").textContent = `0${index + 1} / 06 · CONTROL-ROOM BRIEFING`;
+  $("tutorial-back").disabled = index === 0;
+  $("tutorial-next").textContent =
+    index === lessons.length - 1 ? "START OPERATING →" : "NEXT →";
+  $("tutorial").dataset.placement = index === 5 ? "top" : "bottom";
+  if (innerWidth < 1000)
+    target.scrollIntoView({ block: "center", behavior: "instant" });
+  syncControls();
+}
+function startTutorial() {
+  if (tutorialIndex >= 0) {
+    showLesson(0);
+    return;
+  }
+  tutorialWasPaused = state.paused;
+  state.paused = true;
+  showLesson(0);
+}
+function endTutorial() {
+  document
+    .querySelectorAll(".tutorial-target")
+    .forEach((el) => el.classList.remove("tutorial-target"));
+  $("tutorial").hidden = true;
+  tutorialIndex = -1;
+  state.briefed = true;
+  state.paused = tutorialWasPaused;
+  syncControls();
+  save();
+}
+$("tutorial-next").addEventListener("click", () =>
+  tutorialIndex === lessons.length - 1
+    ? endTutorial()
+    : showLesson(tutorialIndex + 1),
+);
+$("tutorial-back").addEventListener("click", () =>
+  showLesson(Math.max(0, tutorialIndex - 1)),
+);
+$("tutorial-skip").addEventListener("click", endTutorial);
+$("help").addEventListener("click", () => {
+  if (hasStarted) startTutorial();
+});
+function showSetup() {
+  if (tutorialIndex >= 0) endTutorial();
+  returnPaused = state.paused;
+  state.paused = true;
+  $("continue-shift").hidden = !stored && !hasStarted;
+  $("save-note").hidden = !stored && !hasStarted;
+  $("continue-shift").textContent =
+    `CONTINUE ${state.mode.toUpperCase()} SHIFT`;
+  $("include-tutorial").checked = !state.briefed;
+  $("setup").showModal();
+  syncControls();
+}
+$("reset").addEventListener("click", showSetup);
+$("start-shift").addEventListener("click", () => {
+  state = initialState(
+    document.querySelector("input[name=mode]:checked").value,
+  );
+  hasStarted = true;
+  previousNews = "";
+  lastHistory = -Infinity;
+  selectedAlarm = null;
+  acknowledged.clear();
+  previousLevels.clear();
+  $("setup").close();
+  if ($("include-tutorial").checked) startTutorial();
+  else state.briefed = true;
+  updateUI();
+  save();
+});
+$("continue-shift").addEventListener("click", () => {
+  hasStarted = true;
+  state.paused = returnPaused;
+  $("setup").close();
+  if ($("include-tutorial").checked) startTutorial();
+  else state.briefed = true;
+  updateUI();
+  save();
+});
+$("setup").addEventListener("cancel", (event) => {
+  event.preventDefault();
+  if (stored || hasStarted) $("continue-shift").click();
+});
+$("ticker-pause").addEventListener("click", () => {
+  const paused = document.body.classList.toggle("ticker-paused");
+  $("ticker-pause").setAttribute("aria-pressed", String(paused));
+  $("ticker-pause").textContent = paused ? "▶" : "Ⅱ";
+  $("ticker-pause").setAttribute(
+    "aria-label",
+    paused ? "Resume news feed" : "Pause news feed",
+  );
+});
+$("open-news").addEventListener("click", () => $("news-dialog").showModal());
+document.addEventListener("keydown", (event) => {
+  if (
+    event.code === "Space" &&
+    !["INPUT", "BUTTON", "SELECT"].includes(document.activeElement.tagName) &&
+    !$("setup").open &&
+    !$("news-dialog").open &&
+    tutorialIndex < 0
+  ) {
+    event.preventDefault();
+    $("pause").click();
+  }
+});
 function updateNews() {
   const next = events(state.minute)
     .filter((event) => event.end > state.minute)
@@ -211,26 +470,33 @@ function updateNews() {
     state.mode;
   if (key === previousNews) return;
   previousNews = key;
+  const group = document.createElement("div");
+  group.className = "ticker-group";
   $("news").replaceChildren(
     ...next.map((event) => {
+      const active = event.at <= state.minute,
+        when = `${environment(event.at).date.getUTCDate() !== environment(state.minute).date.getUTCDate() ? "TOMORROW " : ""}${timeFormat.format(environment(event.at).date)}`;
+      const item = document.createElement("span");
+      item.className = "ticker-item";
+      const label = document.createElement("b");
+      label.textContent = active ? "NOW" : when;
+      item.append(label, `${event.title} - ${event.body}`);
+      group.append(item);
       const article = document.createElement("article");
       article.className = "news-item";
-      const active = event.at <= state.minute;
-      const relativeDay =
-        environment(event.at).date.toDateString() ===
-        environment(state.minute).date.toDateString()
-          ? ""
-          : "TOMORROW ";
-      article.innerHTML = `<div class="news-meta"><span class="tag ${active ? "active" : ""}">${active ? "HAPPENING NOW" : "COMING UP"}</span><time>${relativeDay}${timeFormat.format(environment(event.at).date)}</time></div><h3>${event.title}</h3><p>${event.body}</p><div class="news-effect">${event.mw > 0 ? "↗" : "↘"} ${event.mw > 0 ? "+" : ""}${Math.round(event.mw * MODES[state.mode].scale)} MW EXPECTED</div>`;
+      article.innerHTML = `<div class="news-meta"><span class="tag ${active ? "active" : ""}">${active ? "HAPPENING NOW" : "COMING UP"}</span><time>${when}</time></div><h3>${event.title}</h3><p>${event.body}</p><p>${event.hint}</p><div class="news-effect">${event.mw > 0 ? "+" : ""}${Math.round(event.mw * MODES[state.mode].scale)} MW EXPECTED</div>`;
       return article;
     }),
   );
+  const duplicate = group.cloneNode(true);
+  duplicate.setAttribute("aria-hidden", "true");
+  $("ticker-track").replaceChildren(group, duplicate);
 }
 function updateUI() {
   const e = environment(state.minute),
     demand = demandAt(state.minute, state.mode),
-    difference = state.output - demand;
-  const balanced = Math.abs(difference) <= MODES[state.mode].tolerance;
+    difference = state.output - demand,
+    balanced = Math.abs(difference) <= MODES[state.mode].tolerance;
   $("clock").textContent = timeFormat.format(e.date);
   $("date").textContent = dateFormat.format(e.date).toUpperCase();
   $("weather").textContent =
@@ -238,7 +504,7 @@ function updateUI() {
   $("output").textContent = Math.round(state.output);
   $("demand").textContent = Math.round(demand);
   $("difference").textContent =
-    `${difference > 0 ? "+" : ""}${Math.round(difference)} MW ${balanced ? "· IN RANGE" : difference < 0 ? "· SHORTFALL" : "· SURPLUS"}`;
+    `${difference > 0 ? "+" : ""}${Math.round(difference)} MW · ${balanced ? "IN RANGE" : difference < 0 ? "SHORTFALL" : "SURPLUS"}`;
   $("difference").style.color = balanced ? "var(--green)" : "var(--amber)";
   $("balance-marker").style.left = `${clamp(50 + difference / 8, 1, 98)}%`;
   $("balance-status").textContent = balanced
@@ -247,56 +513,44 @@ function updateUI() {
       ? "UNDER TARGET"
       : "OVER TARGET";
   $("balance-status").classList.toggle("warn", !balanced);
-  $("temperature").textContent = Math.round(state.temperature);
-  $("heat").textContent = Math.round(state.heat);
-  $("condenser").textContent = Math.round(state.condenser);
-  $("temp-bar").style.width =
-    `${clamp((state.temperature - 200) / 1.35, 0, 100)}%`;
-  $("heat-bar").style.width = `${state.heat}%`;
-  $("cool-bar").style.width = `${clamp((state.condenser / 65) * 100, 0, 100)}%`;
-  $("temp-bar").style.background =
-    state.temperature > 315 ? "var(--red)" : "var(--amber)";
+  for (const key of ["temperature", "condenser", "pressure", "water"])
+    $(key).textContent = Math.round(state[key]);
+  $("flow-reading").textContent =
+    `${Math.round(pumpFlow(state) * state.cooling)}% FLOW`;
+  $("core-peak").textContent = `${Math.round(hotspot(state))}°C PEAK`;
+  for (const { cell, row, col } of cells) {
+    const power = channelPower(state, row, col);
+    const heatStress = Math.max(0, hotspot(state) - 300) * 1.7;
+    const intensity = clamp(power + heatStress, 0, 100);
+    cell.style.backgroundColor = `hsl(${100 - intensity * 0.9} 65% ${9 + power * 0.42}%)`;
+    cell.style.boxShadow =
+      power > 45
+        ? `0 0 ${Math.round(power / 15)}px hsl(${100 - intensity * 0.9} 70% 50% / .18)`
+        : "none";
+    cell.title = `Bank ${"ABC"[Math.min(2, Math.floor(col / 3))]} · channel ${row + 1}-${col + 1} · ${Math.round(power)}% power`;
+  }
+  $("fuel-grid").setAttribute(
+    "aria-label",
+    `Fuel channel power: banks A ${Math.round(state.bankHeat[0])}%, B ${Math.round(state.bankHeat[1])}%, C ${Math.round(state.bankHeat[2])}%. Peak ${Math.round(hotspot(state))} degrees.`,
+  );
   const outage = state.output < 45 || !state.breaker;
   document.body.classList.toggle("emergency", outage);
   $("emergency-banner").hidden = !outage;
   $("plant-status").textContent = state.tripped
-    ? "● SHUT DOWN"
+    ? "● REACTOR TRIPPED"
     : !state.breaker
       ? "● GRID OPEN"
       : "● RUNNING";
-  $("plant-status").style.color =
-    state.tripped || !state.breaker ? "var(--amber)" : "var(--green)";
-  document.querySelector(".hot.motion").style.opacity = clamp(
-    state.steam / 25,
-    0,
-    1,
-  );
-  document.querySelector(".cold.motion").style.opacity = state.cooling / 100;
+  $("plant-status").style.color = state.tripped ? "var(--red)" : "var(--green)";
   $("score").textContent =
     state.elapsed < 10
       ? "SHIFT JUST STARTED"
       : `${Math.round((state.matched / state.elapsed) * 100)}% OF SHIFT IN BALANCE`;
   const ahead = demandAt(state.minute + 60, state.mode);
   $("forecast-text").textContent =
-    `${Math.round(ahead)} MW expected in one hour. ${ahead > demand + 40 ? "Build heat before demand rises." : ahead < demand - 40 ? "Ease off as demand falls." : "Keep output steady and watch the wire."}`;
-  $("advice").textContent = state.tripped
-    ? state.temperature >= 305
-      ? "The reactor has shut down. Keep cooling high. Restart becomes available below 305°C."
-      : "The reactor is cooling. Select Restart when you are ready to bring it back online."
-    : !state.breaker
-      ? "The grid breaker is open. Connect it to supply electricity. Emergency lights use the auxiliary supply."
-      : state.temperature > 310
-        ? "Core temperature is rising. Increase cooling or reduce reactor power before the automatic shutdown at 335°C."
-        : state.cooling < state.heat * 0.65
-          ? "Cooling is low for this thermal load. Increase flow to carry away more heat."
-          : state.turbine < 60 && difference < -50
-            ? "Open the turbine valve to use more of the available steam."
-            : !balanced
-              ? difference < 0
-                ? "Increase reactor power in small steps. Heat takes time to reach the turbine."
-                : "Reduce reactor power, or close the turbine valve for a faster output reduction."
-              : "The grid is balanced. Read the next headline and prepare for the change.";
+    `${Math.round(ahead)} MW expected in one hour. ${ahead > demand + 40 ? "Withdraw rods gradually before demand rises." : ahead < demand - 40 ? "Insert rods gradually as demand falls." : "Keep output steady and watch The Wire."}`;
   syncControls();
+  updateAlarms();
   updateNews();
   drawChart();
 }
@@ -365,14 +619,10 @@ function frame(now) {
   if (now - last < 1000 / 30) return;
   const dt = last ? Math.min((now - last) / 1000, 0.1) : 0;
   last = now;
-  step(state, dt);
+  if (hasStarted) step(state, dt);
   if (!state.paused) visualTime += dt;
   scene.draw(state, visualTime, lowMotion);
-  if (!state.paused && !lowMotion)
-    rotor =
-      (rotor + dt * state.steam * Math.min(1, state.turbine / 72) * 2) % 360;
-  $("turbine-rotor").setAttribute("transform", `rotate(${rotor} 201 56)`);
-  if (state.minute - lastHistory >= 2) {
+  if (hasStarted && state.minute - lastHistory >= 2) {
     state.history.push([state.minute, state.output]);
     state.history = state.history.filter(
       (point) => point[0] >= state.minute - 65,
@@ -393,7 +643,6 @@ document.addEventListener("visibilitychange", () => {
   last = 0;
 });
 window.addEventListener("pagehide", save);
-syncControls();
 updateUI();
-if (!stored) showGuide();
+showSetup();
 requestAnimationFrame(frame);

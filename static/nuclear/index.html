@@ -71,11 +71,7 @@
             ><button data-speed="3" aria-pressed="false">3×</button
             ><button data-speed="6" aria-pressed="false">6×</button>
           </div>
-          <select id="difficulty" aria-label="Difficulty">
-            <option value="relaxed">Relaxed shift</option>
-            <option value="standard">Standard shift</option>
-            <option value="challenging">Challenging shift</option>
-          </select>
+          <span id="difficulty" class="difficulty-label">RELAXED SHIFT</span>
         </div>
         <div class="shift-score">
           <span class="live-dot"></span
@@ -134,259 +130,242 @@
             </div>
           </div>
         </section>
-        <section class="panel plant-panel">
+        <section class="panel plant-panel" id="reactor-panel">
           <div class="panel-heading">
-            <h2><span class="number">02</span> THE PLANT</h2>
+            <h2><span class="number">02</span> REACTOR CONTROL</h2>
             <span id="plant-status" class="tiny-status">● RUNNING</span>
           </div>
-          <div
-            class="flow"
-            aria-label="Heat flows from the reactor through the turbine to the grid, while the cooling loop removes waste heat"
-          >
-            <svg viewBox="0 0 400 130" aria-hidden="true">
-              <defs>
-                <pattern
-                  id="core-grid"
-                  width="8"
-                  height="8"
-                  patternUnits="userSpaceOnUse"
-                >
-                  <rect width="3" height="3" fill="#e6b57e" />
-                </pattern>
-              </defs>
-              <path class="pipe hot" d="M81 56 H180 M221 56 H329" />
-              <path class="pipe cold" d="M201 77 V111 H61 V77" />
-              <path class="pipe hot motion" d="M81 56 H180 M221 56 H329" />
-              <path class="pipe cold motion" d="M201 77 V111 H61 V77" />
-              <rect
-                class="machine"
-                x="39"
-                y="26"
-                width="44"
-                height="58"
-                rx="15"
-              />
-              <rect
-                x="49"
-                y="39"
-                width="24"
-                height="31"
-                fill="url(#core-grid)"
-              />
-              <path
-                stroke="#e6b57e"
-                stroke-width="3"
-                d="M54 18 V43 M62 18 V43 M70 18 V43"
-              />
-              <circle class="machine" cx="201" cy="56" r="26" />
-              <g id="turbine-rotor">
-                <path
-                  fill="#b9ed89"
-                  d="M199 53 187 36 Q209 32 204 53L223 50Q229 70 206 59L202 78Q182 80 196 58Z"
-                />
-              </g>
-              <circle cx="201" cy="56" r="4" fill="#e8eedc" />
-              <rect
-                class="machine"
-                x="330"
-                y="33"
-                width="35"
-                height="47"
-                rx="5"
-              />
-              <path
-                fill="none"
-                stroke="#b9ed89"
-                stroke-width="2"
-                d="m350 41-12 18h11l-5 14 14-21h-10z"
-              />
-              <text x="61" y="9">REACTOR</text>
-              <text x="201" y="9">TURBINE</text>
-              <text x="348" y="9">GRID</text>
-              <text x="133" y="128">COOLING LOOP</text>
-            </svg>
-          </div>
-          <div class="telemetry">
-            <div>
-              <span class="eyebrow">CORE TEMP</span
-              ><strong
-                ><span id="temperature">291</span><small> °C</small></strong
-              >
-              <div class="mini-track"><i id="temp-bar"></i></div>
-            </div>
-            <div>
-              <span class="eyebrow">THERMAL LOAD</span
-              ><strong><span id="heat">64</span><small> %</small></strong>
-              <div class="mini-track"><i id="heat-bar"></i></div>
-            </div>
-            <div>
-              <span class="eyebrow">CONDENSER</span
-              ><strong><span id="condenser">31</span><small> °C</small></strong>
-              <div class="mini-track"><i id="cool-bar"></i></div>
-            </div>
-          </div>
-          <div class="controls">
-            <div class="control">
-              <div class="control-title">
-                <label for="reactor"
-                  ><span class="control-symbol amber">◉</span> Reactor
-                  power</label
-                ><output id="reactor-value" for="reactor"
-                  >64<span>%</span></output
-                >
+          <section id="alarm-panel" aria-label="Plant warning panel">
+            <div id="annunciators" class="annunciators"></div>
+            <div class="alarm-detail">
+              <div>
+                <strong id="alarm-title">ALL SYSTEMS NORMAL</strong>
+                <p id="alarm-advice" role="status">
+                  Select a warning tile to inspect a system.
+                </p>
               </div>
-              <input
-                id="reactor"
-                type="range"
-                min="0"
-                max="100"
-                value="64"
-                aria-describedby="reactor-hint"
-              />
-              <div class="control-hint" id="reactor-hint">
-                <span>LESS HEAT</span><span>MORE HEAT</span>
-              </div>
+              <button id="acknowledge">ACKNOWLEDGE</button>
             </div>
-            <div class="control">
-              <div class="control-title">
-                <label for="turbine"
-                  ><span class="control-symbol green">ϟ</span> Turbine
-                  valve</label
-                ><output id="turbine-value" for="turbine"
-                  >72<span>%</span></output
-                >
+          </section>
+          <div class="reactor-workspace">
+            <section id="rod-console" class="rod-console">
+              <div class="instrument-label">
+                <span>FUEL CHANNEL MONITOR</span
+                ><span id="core-peak">291°C PEAK</span>
               </div>
-              <input
-                id="turbine"
-                type="range"
-                min="0"
-                max="100"
-                value="72"
-                aria-describedby="turbine-hint"
-              />
-              <div class="control-hint" id="turbine-hint">
-                <span>LESS ELECTRICITY</span><span>MORE ELECTRICITY</span>
+              <div
+                id="fuel-grid"
+                role="img"
+                aria-label="Fuel channel power map. Each vertical third corresponds to rod bank A, B or C."
+              ></div>
+              <div class="core-legend">
+                <span>LOW <i></i><i></i><i></i><i></i> HIGH</span
+                ><span>HEAT / CHANNEL</span>
               </div>
-            </div>
-            <div class="control">
-              <div class="control-title">
-                <label for="cooling"
-                  ><span class="control-symbol blue">≋</span> Cooling
-                  flow</label
-                ><output id="cooling-value" for="cooling"
-                  >65<span>%</span></output
-                >
+              <div class="bank-caption">
+                ROD WITHDRAWAL <span>MORE WITHDRAWAL = MORE HEAT</span>
               </div>
-              <input
-                id="cooling"
-                type="range"
-                min="0"
-                max="100"
-                value="65"
-                aria-describedby="cooling-hint"
-              />
-              <div class="control-hint" id="cooling-hint">
-                <span>LOWER FLOW</span><span>MORE COOLING</span>
+              <div id="rod-banks" class="rod-banks"></div>
+              <button id="equalise" class="equalise">EQUALISE BANKS</button>
+            </section>
+            <section class="process-console">
+              <div class="process-readings">
+                <div>
+                  <span>CORE</span><strong id="temperature">291</strong
+                  ><small>°C</small>
+                </div>
+                <div>
+                  <span>PRESSURE</span><strong id="pressure">60</strong
+                  ><small>bar</small>
+                </div>
+                <div>
+                  <span>DRUM LEVEL</span><strong id="water">62</strong
+                  ><small>%</small>
+                </div>
+                <div>
+                  <span>CONDENSER</span><strong id="condenser">31</strong
+                  ><small>°C</small>
+                </div>
               </div>
-            </div>
-          </div>
-          <div class="plant-actions">
-            <button id="breaker" aria-pressed="true">
-              <span class="live-dot"></span> GRID CONNECTED</button
-            ><button id="trip" class="trip-button">SHUT DOWN</button>
+              <div id="support-controls">
+                <div class="instrument-label">
+                  <span>PRIMARY COOLANT PUMPS</span
+                  ><span id="flow-reading">65% FLOW</span>
+                </div>
+                <div class="switch-row">
+                  <button id="pump-a" class="plant-switch" aria-pressed="true">
+                    <i></i>PUMP A <strong>RUN</strong></button
+                  ><button id="pump-b" class="plant-switch" aria-pressed="true">
+                    <i></i>PUMP B <strong>RUN</strong>
+                  </button>
+                </div>
+                <div class="control">
+                  <div class="control-title">
+                    <label for="cooling">Cooling flow</label
+                    ><output id="cooling-value">65%</output>
+                  </div>
+                  <input
+                    id="cooling"
+                    type="range"
+                    min="0"
+                    max="100"
+                    value="65"
+                    aria-describedby="cooling-hint"
+                  />
+                  <div id="cooling-hint" class="control-hint">
+                    <span>LOWER PUMP LOAD</span><span>MORE HEAT REMOVAL</span>
+                  </div>
+                </div>
+                <div class="feed-controls">
+                  <div>
+                    <span class="instrument-label">STEAM DRUM FEEDWATER</span>
+                    <div class="switch-row feed-mode">
+                      <button id="feed-auto" aria-pressed="true">AUTO</button
+                      ><button id="feed-manual" aria-pressed="false">
+                        MANUAL
+                      </button>
+                    </div>
+                  </div>
+                  <div class="feed-adjust">
+                    <button id="feed-less" aria-label="Reduce manual feedwater">
+                      −</button
+                    ><output id="feedwater-value">AUTO</output
+                    ><button
+                      id="feed-more"
+                      aria-label="Increase manual feedwater"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div id="steam-controls">
+                <div class="control">
+                  <div class="control-title">
+                    <label for="turbine">Turbine valve</label
+                    ><output id="turbine-value">72%</output>
+                  </div>
+                  <input
+                    id="turbine"
+                    type="range"
+                    min="0"
+                    max="100"
+                    value="72"
+                    aria-describedby="turbine-hint"
+                  />
+                  <div id="turbine-hint" class="control-hint">
+                    <span>LESS ELECTRICITY</span
+                    ><span>MORE STEAM TO TURBINE</span>
+                  </div>
+                </div>
+                <button id="bypass" class="plant-switch" aria-pressed="false">
+                  <i></i>STEAM BYPASS <strong>CLOSED</strong>
+                </button>
+              </div>
+              <div class="plant-actions">
+                <button id="breaker" aria-pressed="true">
+                  <span class="live-dot"></span> GRID CONNECTED</button
+                ><button id="trip" class="trip-button">EMERGENCY STOP</button>
+              </div>
+            </section>
           </div>
         </section>
-        <aside class="panel news-panel">
-          <div class="panel-heading">
-            <h2><span class="number">03</span> THE WIRE</h2>
-            <span class="wire-icon">◔ LIVE</span>
-          </div>
-          <p class="news-intro">Tomorrow’s headlines. Today’s problem.</p>
-          <div id="news"></div>
-          <div class="operator-note">
-            <span class="eyebrow">OPERATOR’S NOTE</span>
-            <p id="advice">
-              Small changes work best. Give the plant time to respond.
-            </p>
-          </div>
-        </aside>
       </main>
+      <section class="news-ticker" id="news-ticker" aria-label="News feed">
+        <button id="open-news">THE WIRE <span>↗</span></button>
+        <div
+          class="ticker-window"
+          tabindex="0"
+          aria-label="Scrolling news. Focus to pause; open The Wire to read all stories."
+        >
+          <div id="ticker-track"></div>
+        </div>
+        <button
+          id="ticker-pause"
+          aria-label="Pause news feed"
+          aria-pressed="false"
+        >
+          Ⅱ
+        </button>
+      </section>
       <footer>
         <span
           ><span class="live-dot"></span>
           <span id="save-status">AUTOSAVE ON</span></span
         ><span>KEEP THE LIGHTS ON. KEEP THE KETTLE ON.</span>
         <div>
-          <button id="motion" aria-pressed="false">LOW MOTION</button
+          <button id="sound" aria-pressed="false">ALARM SOUND OFF</button
+          ><button id="motion" aria-pressed="false">LOW MOTION</button
           ><button id="reset">NEW SHIFT</button><a href="/">JAMIE EVERETT ↗</a>
         </div>
       </footer>
     </div>
-    <dialog id="guide">
-      <form method="dialog">
-        <button class="close-dialog" aria-label="Close guide">×</button>
-      </form>
-      <span class="eyebrow">WELCOME TO YOUR SHIFT</span>
-      <h2>Keep the grid in balance.</h2>
+    <dialog id="setup" aria-labelledby="setup-title">
+      <span class="eyebrow">BRAMBLE POINT / SHIFT ASSIGNMENT</span>
+      <h2 id="setup-title">Take the control room.</h2>
       <p>
-        Your job is to match the plant’s output to the green demand line. There
-        is no equipment wear, and no time limit.
+        Choose your shift. Difficulty stays fixed until you start a new one.
+        There is no equipment wear or time limit.
       </p>
-      <ol>
-        <li>
-          <strong>Make heat.</strong> Adjust reactor power. Heat and steam take
-          time to build or fall.
-        </li>
-        <li>
-          <strong>Make electricity.</strong> Open the turbine valve to turn
-          steam into power. Beyond 72%, the available steam limits output.
-        </li>
-        <li>
-          <strong>Keep it cool.</strong> More cooling improves heat removal and
-          makes larger plumes when heat is available. Pumps use some
-          electricity.
-        </li>
-        <li>
-          <strong>Read ahead.</strong> Weather, time, weekends and news change
-          demand. Prepare before an event starts.
-        </li>
-      </ol>
-      <p>
-        Low cooling can trigger an automatic shutdown. Keep cooling on, then
-        restart below 305°C. Disconnect the grid to see the site switch to
-        emergency lights.
-      </p>
-      <p>
-        Pause whenever you want. One day takes 15 minutes at 1×. Your shift
-        saves on this device. Difficulty changes the target tolerance and event
-        size.
-      </p>
-      <details>
-        <summary>About the simulation</summary>
-        <p>
-          This is a game with simplified thermal response and separate heat,
-          steam and cooling stages. It is not an operating model of a real
-          plant. The basic power cycle follows the
-          <a
-            href="https://www.nrc.gov/reactors/power/pwrs"
-            target="_blank"
-            rel="noopener noreferrer"
-            >NRC’s explanation of pressurised water reactors</a
-          >. Weather and news are fictional. The site lighting is deliberately
-          dramatised.
-        </p>
-      </details>
-      <button id="start" class="start-button">
-        TAKE THE CONTROLS <span>→</span>
+      <fieldset class="difficulty-options">
+        <legend>Shift difficulty</legend>
+        <label
+          ><input type="radio" name="mode" value="relaxed" checked /><span
+            ><strong>Relaxed</strong
+            ><small>Wide target range. Gentler demand events.</small></span
+          ><b>±100 MW</b></label
+        >
+        <label
+          ><input type="radio" name="mode" value="standard" /><span
+            ><strong>Standard</strong
+            ><small>Closer matching. Full-sized demand events.</small></span
+          ><b>±65 MW</b></label
+        >
+        <label
+          ><input type="radio" name="mode" value="challenging" /><span
+            ><strong>Challenging</strong
+            ><small>Tight target range. Larger demand changes.</small></span
+          ><b>±35 MW</b></label
+        >
+      </fieldset>
+      <label class="tutorial-option"
+        ><input id="include-tutorial" type="checkbox" checked /> Show the short
+        control-room briefing</label
+      >
+      <button id="start-shift" class="start-button">
+        START NEW SHIFT <span>→</span></button
+      ><button id="continue-shift" class="continue-button" hidden>
+        CONTINUE SAVED SHIFT
       </button>
+      <p id="save-note" class="save-note" hidden>
+        A new shift replaces your current save.
+      </p>
     </dialog>
-    <dialog id="reset-dialog">
-      <h2>Start a new shift?</h2>
-      <p>This replaces your saved shift and returns to 06:00 on 1 October.</p>
-      <div class="dialog-actions">
-        <button id="cancel-reset">Keep this shift</button
-        ><button id="confirm-reset" class="start-button">Start again</button>
+    <section
+      id="tutorial"
+      class="tutorial"
+      hidden
+      aria-label="Control-room briefing"
+    >
+      <div class="tutorial-heading">
+        <span id="tutorial-step" class="eyebrow">01 / 06 · BRIEFING</span
+        ><button id="tutorial-skip">SKIP</button>
       </div>
+      <h2 id="tutorial-title"></h2>
+      <p id="tutorial-text"></p>
+      <div class="tutorial-actions">
+        <span>SIMULATION PAUSED · CONTROLS AVAILABLE</span
+        ><button id="tutorial-back">BACK</button
+        ><button id="tutorial-next">NEXT →</button>
+      </div>
+    </section>
+    <dialog id="news-dialog" aria-labelledby="news-title">
+      <form method="dialog">
+        <button class="close-dialog" aria-label="Close news">×</button>
+      </form>
+      <span class="eyebrow">GRID INTELLIGENCE</span>
+      <h2 id="news-title">The Wire</h2>
+      <div id="news"></div>
     </dialog>
     <noscript>This simulator needs JavaScript to run.</noscript>
   </body>

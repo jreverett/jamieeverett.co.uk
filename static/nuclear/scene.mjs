@@ -1,4 +1,4 @@
-import { clamp, environment } from "./model.mjs";
+import { clamp, environment, pumpFlow } from "./model.mjs";
 export function createScene(canvas) {
   const ctx = canvas.getContext("2d", { alpha: false });
   let width = 0,
@@ -213,7 +213,8 @@ export function createScene(canvas) {
       { x: sx(927), y: ground - 3, size: height * 0.57 },
     ];
     const plume = clamp(
-      (Math.min(s.heat, 12 + s.cooling * 1.35) / 100) * (0.2 + s.cooling / 100),
+      (Math.min(s.heat, 6 + (6 + s.cooling * 1.35) * pumpFlow(s)) / 100) *
+        (0.2 + s.cooling / 100),
       0,
       1.3,
     );
