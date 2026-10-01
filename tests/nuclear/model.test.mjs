@@ -32,10 +32,10 @@ test("control rods move towards their target before heat and power respond", () 
 });
 test("withdrawing rods increases sustained generation", () => {
   const s = initialState();
-  s.rodInsertion = 10;
+  s.rodInsertion = 30;
   s.cooling = 100;
   run(s, 100);
-  assert.equal(s.rodPosition, 10);
+  assert.equal(s.rodPosition, 30);
   assert.ok(s.output > 850);
   assert.equal(s.meltdown, false);
 });
@@ -98,7 +98,7 @@ test("leaving the pump off reaches all heat stages and causes a terminal meltdow
 test("emergency stop and cooling can recover a dangerously hot reactor", () => {
   const s = initialState();
   s.pump = false;
-  run(s, 70);
+  run(s, 20);
   assert.ok(s.temperature > 450);
   shutdown(s);
   s.pump = true;
@@ -237,4 +237,47 @@ test("alarms give recovery advice without promising automatic protection", () =>
   assert.ok(
     list.find((a) => a.id === "core").action.includes("no automatic shutdown"),
   );
+});
+
+test("full withdrawal creates accelerating neutron growth and a rapid uncooled meltdown", () => {
+  const s = initialState();
+  s.rodInsertion = 0;
+  s.cooling = 0;
+  run(s, 2);
+  const first = s.neutrons;
+  run(s, 2);
+  const second = s.neutrons;
+  run(s, 2);
+  assert.ok(s.neutrons - second > second - first);
+  assert.ok(s.neutrons > 200);
+  assert.ok(s.temperature > 340);
+  const saved = restore(JSON.stringify(s));
+  assert.equal(saved.neutrons, s.neutrons);
+  assert.equal(saved.heat, s.heat);
+  run(s, 14);
+  assert.equal(s.meltdown, true);
+  assert.ok(s.elapsed < 20);
+});
+test("a prompt manual stop can arrest a power surge", () => {
+  const s = initialState();
+  s.rodInsertion = 0;
+  s.cooling = 0;
+  run(s, 5);
+  shutdown(s);
+  s.cooling = 100;
+  run(s, 100);
+  assert.equal(s.meltdown, false);
+  assert.ok(s.temperature < 310);
+});
+test("simulation speed preserves runaway timing", () => {
+  const results = [1, 3, 6].map((speed) => {
+    const s = Object.assign(initialState(), {
+      speed,
+      rodInsertion: 0,
+      cooling: 0,
+    });
+    run(s, 20);
+    return s.elapsed;
+  });
+  assert.ok(Math.max(...results) - Math.min(...results) < 0.1);
 });

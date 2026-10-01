@@ -38,8 +38,7 @@ let visualTime = 0,
   lastHistory = -Infinity,
   previousNews = "",
   selectedAlarm = null;
-let acknowledged = new Map(),
-  previousLevels = new Map(),
+let previousLevels = new Map(),
   sound = false,
   audioContext = null,
   lastChime = 0;
@@ -115,7 +114,7 @@ function syncControls() {
   $("rod-insertion").style.setProperty("--value", `${state.rodInsertion}%`);
   $("rod-insertion-value").textContent = `${Math.round(state.rodInsertion)}%`;
   $("rod-position-value").textContent = `${Math.round(state.rodPosition)}% IN`;
-  for (const id of ["rod-insertion", "withdraw-rods", "insert-rods"])
+  for (const id of ["rod-insertion"])
     $(id).disabled = state.scrammed || state.meltdown;
   $("difficulty").textContent = `${state.mode.toUpperCase()} SHIFT · LOCKED`;
   $("pause").textContent = state.paused ? "▶" : "Ⅱ";
@@ -179,12 +178,6 @@ function change(action) {
 }
 $("rod-insertion").addEventListener("input", (event) =>
   change(() => (state.rodInsertion = Number(event.target.value))),
-);
-$("insert-rods").addEventListener("click", () =>
-  change(() => (state.rodInsertion = clamp(state.rodInsertion + 5, 0, 100))),
-);
-$("withdraw-rods").addEventListener("click", () =>
-  change(() => (state.rodInsertion = clamp(state.rodInsertion - 5, 0, 100))),
 );
 for (const key of ["turbine", "cooling"])
   $(key).addEventListener("input", (event) =>
@@ -269,30 +262,22 @@ $("sound").addEventListener("click", async () => {
   $("sound").textContent = `ALARM SOUND ${sound ? "ON" : "OFF"}`;
   $("sound").setAttribute("aria-pressed", String(sound));
 });
-$("acknowledge").addEventListener("click", () => {
-  for (const alarm of alarms(state))
-    if (alarm.level) acknowledged.set(alarm.id, alarm.level);
-  updateAlarms();
-});
 function updateAlarms() {
   const list = alarms(state);
   for (const alarm of list) {
     if (previousLevels.get(alarm.id) !== alarm.level) {
-      acknowledged.delete(alarm.id);
       if (alarm.level) chime();
       previousLevels.set(alarm.id, alarm.level);
     }
-    const button = $(`alarm-${alarm.id}`),
-      ack = acknowledged.get(alarm.id) === alarm.level && alarm.level > 0;
+    const button = $(`alarm-${alarm.id}`);
     button.dataset.level = alarm.level;
-    button.classList.toggle("unacknowledged", alarm.level > 0 && !ack);
-    button.classList.toggle("acknowledged", ack);
+    button.classList.toggle("active-alarm", alarm.level > 0);
     button.classList.toggle("selected", selectedAlarm === alarm.id);
     button.querySelector("strong").textContent =
       alarm.level === 2 ? "ALARM" : alarm.level === 1 ? "CAUTION" : "NORMAL";
     button.setAttribute(
       "aria-label",
-      `${alarm.label}: ${alarm.level === 2 ? "alarm" : alarm.level === 1 ? "caution" : "normal"}, ${alarm.value}${ack ? ", acknowledged" : ""}`,
+      `${alarm.label}: ${alarm.level === 2 ? "alarm" : alarm.level === 1 ? "caution" : "normal"}, ${alarm.value}`,
     );
     button.setAttribute("aria-pressed", String(selectedAlarm === alarm.id));
   }
@@ -307,12 +292,9 @@ function updateAlarms() {
     : "ALL SYSTEMS NORMAL";
   const advice = detail
     ? detail.action
-    : "Select a tile for operating guidance. New faults flash until acknowledged; a lit tile stays on until its cause is fixed.";
+    : "Select a tile for operating guidance. Warning tiles stay active until their cause is fixed.";
   if ($("alarm-advice").textContent !== advice)
     $("alarm-advice").textContent = advice;
-  $("acknowledge").disabled = !active.some(
-    (alarm) => acknowledged.get(alarm.id) !== alarm.level,
-  );
 }
 const lessons = [
   [
@@ -338,7 +320,7 @@ const lessons = [
   [
     "#alarm-panel",
     "Read the warning wall",
-    "Amber means caution; red means act now. Select a tile for the cause and remedy. Acknowledge stops the flash, not the fault. There are no automatic trips. Emergency Stop inserts all rods, but keep cooling on. Meltdown at the game limit ends your shift.",
+    "Amber means caution; red means act now. Select a tile for the cause and remedy. There are no automatic trips. Emergency Stop inserts all rods, but keep cooling on. Meltdown at the game limit ends your shift.",
   ],
   [
     "#news-ticker",
@@ -422,7 +404,6 @@ $("start-shift").addEventListener("click", () => {
   previousNews = "";
   lastHistory = -Infinity;
   selectedAlarm = null;
-  acknowledged.clear();
   previousLevels.clear();
   $("setup").close();
   if ($("include-tutorial").checked) startTutorial();

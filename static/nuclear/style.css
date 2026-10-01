@@ -303,8 +303,7 @@ main {
   display: grid;
   grid-template-columns: minmax(260px, 0.72fr) minmax(620px, 1.8fr);
   gap: 14px;
-  min-height: 490px;
-  height: calc(100svh - clamp(110px, 17vh, 165px) - 194px);
+  min-height: max(490px, calc(100svh - clamp(110px, 17vh, 165px) - 194px));
 }
 .panel-heading {
   display: flex;
@@ -550,15 +549,8 @@ h2 {
   outline: 1px solid #eef5d1;
   outline-offset: 1px;
 }
-.annunciator.unacknowledged {
+.annunciator.active-alarm {
   animation: alarm-flash 1.6s steps(2, end) infinite;
-}
-.annunciator.acknowledged:after {
-  content: "✓";
-  position: absolute;
-  right: 4px;
-  top: 2px;
-  font-size: 9px;
 }
 @keyframes alarm-flash {
   50% {
@@ -1261,8 +1253,7 @@ input[type="checkbox"] {
     height: 110px;
   }
   main {
-    height: calc(100svh - 304px);
-    min-height: 452px;
+    min-height: max(452px, calc(100svh - 304px));
   }
   .plant-panel {
     gap: 8px;
@@ -1707,7 +1698,7 @@ input[type="checkbox"] {
     top: 9px;
   }
   main {
-    height: calc(100svh - 264px);
+    min-height: max(0px, calc(100svh - 264px));
   }
 }
 #fuel-grid {
@@ -1750,24 +1741,7 @@ input[type="checkbox"] {
 .rod-control .control-hint {
   font-size: 6px;
 }
-.rod-buttons {
-  display: flex;
-  gap: 8px;
-}
-.rod-buttons button {
-  flex: 1;
-  height: 30px;
-  font:
-    9px Mono,
-    monospace;
-  background: linear-gradient(#35423b, #26312d);
-  border-color: #5e6d5d;
-  box-shadow: 0 2px 0 #080f0d;
-}
-.rod-buttons button:active {
-  transform: translateY(1px);
-  box-shadow: none;
-}
+
 .fuel-note {
   font-size: 9px;
   line-height: 1.4;
@@ -1856,7 +1830,7 @@ body[data-heat="meltdown"] .process-readings strong {
     height: 110px;
   }
   main {
-    height: calc(100svh - 304px);
+    min-height: max(0px, calc(100svh - 304px));
   }
 }
 @media (min-width: 1000px) and (max-height: 850px) {
@@ -1867,10 +1841,7 @@ body[data-heat="meltdown"] .process-readings strong {
     font-size: 8px;
     margin: 5px 0;
   }
-  .rod-buttons button {
-    height: 27px;
-    font-size: 8px;
-  }
+
   .rod-position {
     font-size: 8px;
   }
@@ -1883,7 +1854,7 @@ body[data-heat="meltdown"] .process-readings strong {
     height: 70px;
   }
   main {
-    height: calc(100svh - 264px);
+    min-height: max(0px, calc(100svh - 264px));
   }
 }
 @media (max-width: 600px) {
@@ -1896,10 +1867,7 @@ body[data-heat="meltdown"] .process-readings strong {
   .rod-control .control-title {
     font-size: 12px;
   }
-  .rod-buttons button {
-    height: 38px;
-    font-size: 10px;
-  }
+
   .fuel-note {
     font-size: 10px;
   }
@@ -1907,4 +1875,13 @@ body[data-heat="meltdown"] .process-readings strong {
     font-size: 8px;
     margin-bottom: 5px;
   }
+}
+
+.reactor-workspace,
+.process-console,
+.rod-console {
+  min-height: min-content;
+}
+.plant-actions {
+  flex-shrink: 0;
 }

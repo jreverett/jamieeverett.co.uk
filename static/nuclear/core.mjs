@@ -39,8 +39,8 @@ export function createCore(canvas, effects) {
     const rods = [0.16, 0.33, 0.5, 0.67, 0.84].map((x) => x * width);
     const moving = !s.paused && !s.meltdown && !lowMotion;
     if (moving) {
-      spawn += dt * s.neutrons * 0.85;
-      while (spawn >= 1 && particles.length < 80) {
+      spawn += dt * Math.min(s.neutrons, 700) * 0.85;
+      while (spawn >= 1 && particles.length < 220) {
         spawn--;
         const angle = random() * Math.PI * 2;
         particles.push({
@@ -74,13 +74,16 @@ export function createCore(canvas, effects) {
     }
     ctx.lineWidth = 1;
     const dots = lowMotion
-      ? Array.from({ length: Math.round(s.neutrons * 0.35) }, (_, i) => ({
-          x: 12 + (((i * 47) % 100) / 100) * (width - 24),
-          y: 12 + (((i * 71) % 100) / 100) * (height - 24),
-          vx: 20,
-          vy: 12,
-          life: 1,
-        }))
+      ? Array.from(
+          { length: Math.min(220, Math.round(s.neutrons * 0.35)) },
+          (_, i) => ({
+            x: 12 + (((i * 47) % 100) / 100) * (width - 24),
+            y: 12 + (((i * 71) % 100) / 100) * (height - 24),
+            vx: 20,
+            vy: 12,
+            life: 1,
+          }),
+        )
       : particles;
     for (const p of dots) {
       ctx.strokeStyle = `rgba(154,237,255,${Math.min(0.75, p.life)})`;

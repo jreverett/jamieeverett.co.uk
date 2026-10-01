@@ -266,14 +266,36 @@ export function alarms(s) {
 }
 export function step(s, dt) {
   if (s.paused || s.meltdown) return s;
-  dt = clamp(dt, 0, 0.25) * s.speed;
+  let remaining = clamp(dt, 0, 0.25) * s.speed;
+  while (remaining > 0 && !s.meltdown) {
+    const tick = Math.min(remaining, 0.05);
+    advance(s, tick);
+    remaining -= tick;
+  }
+  return s;
+}
+function advance(s, dt) {
   s.minute += dt * 1.6;
   const air = environment(s.minute).temperature;
   const movement = (s.scrammed ? 65 : 5) * dt;
   s.rodPosition += clamp(s.rodInsertion - s.rodPosition, -movement, movement);
   s.reactor = 100 - s.rodPosition;
-  s.neutrons += (s.reactor - s.neutrons) * (1 - Math.exp(-dt / 0.8));
-  s.heat += (s.neutrons - s.heat) * (1 - Math.exp(-dt / 15));
+  const rodWorth = 58 * Math.exp((42 - s.rodPosition) / 22);
+  const reactivity = clamp(
+    (rodWorth - s.heat) * 0.006 - (s.temperature - 291) * 0.0003,
+    -3,
+    1.2,
+  );
+  const absorption = s.rodPosition > 90 ? (s.rodPosition - 90) * 0.3 : 0;
+  s.neutrons = clamp(
+    s.neutrons * Math.exp((reactivity - absorption) * dt) +
+      (s.scrammed ? 0 : 0.01 * dt),
+    0,
+    2000,
+  );
+  s.heat +=
+    (s.neutrons - s.heat) *
+    (1 - Math.exp(-dt / (s.neutrons > s.heat ? 3 : 15)));
   const coolingCapacity = 6 + (6 + s.cooling * 1.35) * pumpFlow(s);
   const waterFactor = clamp((s.water - 5) / 35, 0.05, 1);
   const pressureFactor = clamp(1 - Math.max(0, s.pressure - 85) / 140, 0.4, 1);
@@ -291,7 +313,7 @@ export function step(s, dt) {
     pressureFactor;
   s.temperature = clamp(
     s.temperature +
-      (s.heat - removal) * dt * 0.065 +
+      (s.heat - removal) * dt * 0.18 +
       (275 + s.heat * 0.25 - s.temperature) * dt * 0.002 +
       Math.max(0, s.temperature - 500) * dt * 0.004,
     air,
@@ -348,10 +370,10 @@ export function restore(raw) {
       reactor: [0, 100],
       turbine: [0, 100],
       cooling: [0, 100],
-      heat: [0, 100],
+      heat: [0, 2000],
       temperature: [-20, MELTDOWN_TEMPERATURE],
-      steam: [0, 100],
-      output: [0, 1100],
+      steam: [0, 147],
+      output: [0, 1700],
       condenser: [-20, 120],
       matched: [0, 1e10],
       elapsed: [0, 1e10],
@@ -361,13 +383,13 @@ export function restore(raw) {
       Object.assign(bounds, {
         feedwater: [0, 100],
         water: [0, 100],
-        pressure: [0, 160],
+        pressure: [0, 200],
       });
     if (value.version === 3)
       Object.assign(bounds, {
         rodInsertion: [0, 100],
         rodPosition: [0, 100],
-        neutrons: [0, 100],
+        neutrons: [0, 2000],
       });
     for (const [key, [min, max]] of Object.entries(bounds)) {
       if (!Number.isFinite(value[key]) || value[key] < min || value[key] > max)

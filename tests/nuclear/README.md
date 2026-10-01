@@ -29,15 +29,15 @@ Screenshots are written to the system temporary directory. Tests cover rod trave
 ## Behaviour
 
 - The fictional calendar begins at 06:00 on 1 October 2026. One day takes 15 minutes at 1×. The simulation stops when the tab is hidden.
-- One insertion control moves the control rods through fixed fuel. The monitor shows rod travel, illustrative neutron particles and delayed fuel heat.
+- One insertion slider moves the control rods through fixed fuel. Positive reactivity multiplies neutron activity, with simplified fuel and temperature feedback. Large withdrawals can produce a rapid power surge. The monitor shows rod travel, increasing neutron density and delayed fuel heat. Particle rendering is capped at 220.
 - One coolant pump carries heat away. Cooling flow removes waste heat. Automatic feedwater maintains drum level; manual feed can overfill or starve it. Closing the turbine raises pressure, while the bypass relieves pressure and reduces electrical output.
 - There are no automatic safety trips. Emergency Stop rapidly inserts the control rods; residual heat still needs cooling. Releasing the stop leaves the rods inserted. Heat causes a warning glow, sparks and flames. Reaching the fictional 700°C game limit causes terminal meltdown. A failed shift stays frozen after reload; a new shift resets it. There is no equipment wear.
-- Eight warning tiles show normal, caution and alarm states. Acknowledgement stops flashing but never clears a fault. A severity increase starts a new unacknowledged alarm. Optional sound is off by default.
+- Eight warning tiles show normal, caution and alarm states. Warnings stay active until their cause is fixed. Selecting a tile shows recovery advice. Optional sound is off by default.
 - Weather, daily peaks, weekends, season and scheduled news contribute to demand. News and the forecast use the same event data. News shows at most three active or upcoming events within three hours and removes expired events.
 - Difficulty is selected before a new shift and cannot change during that shift. It changes the permitted output error and news event size. Continuing a save retains its original difficulty. There is no financial penalty.
 - A six-step briefing highlights controls while physics is paused. It can be skipped or replayed with the help button. The news ticker pauses on hover/focus and has a readable expanded view.
 - The renderer is capped at 30 frames per second and a 1.5 pixel ratio. Reduced motion stops warning flashes, ticker motion, particle motion and rain animation. Local storage keeps the current shift; unavailable storage does not prevent play.
-- The thermal model is intentionally qualitative. It does not calculate neutron kinetics, real reactor pressures or licensed operating procedures. Steam pressure and drum level use simplified game dynamics, not engineering units suitable for real operation. Emergency building lighting is a visual game convention, not a model of a station's electrical protection system.
+- The thermal model is intentionally qualitative. Its neutron multiplication and thermal feedback are game dynamics, not engineering neutron kinetics or licensed operating procedures. Steam pressure and drum level use simplified game dynamics, not engineering units suitable for real operation. Emergency building lighting is a visual game convention, not a model of a station's electrical protection system.
 
 The basic separation of reactor, steam turbine and cooling systems follows the [NRC explanation of pressurised water reactors](https://www.nrc.gov/reactors/power/pwrs).
 
