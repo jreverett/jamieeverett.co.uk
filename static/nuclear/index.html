@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#101718" />
+    <meta
+      name="description"
+      content="Run a nuclear power station. Follow the forecast, balance the grid and keep the kettle on. A relaxed browser simulator."
+    />
+    <title>BASELOAD - Grid control simulator</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23101718'/%3E%3Cpath d='M36 8 15 36h15l-3 20 23-30H34z' fill='%23b9ed89'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="./style.css" />
+    <script type="module" src="./app.mjs"></script>
+  </head>
+  <body>
+    <div class="shell">
+      <header>
+        <a class="brand" href="./" aria-label="Baseload home"
+          ><span class="brand-icon">ϟ</span> BASELOAD<span class="brand-tag"
+            >GRID CONTROL / 01</span
+          ></a
+        >
+        <div class="header-right">
+          <span class="live-dot"></span
+          ><span>BRAMBLE POINT <span class="muted">/ UNIT 01</span></span
+          ><button id="help" class="icon-button" aria-label="How to play">
+            ?
+          </button>
+        </div>
+      </header>
+      <section class="vista" aria-label="Live view of the power station">
+        <canvas
+          id="landscape"
+          role="img"
+          aria-label="Power station with animated cooling tower plumes and building lights that respond to electricity output"
+        ></canvas>
+        <div class="vista-top">
+          <span class="camera-label"
+            ><span class="live-dot"></span> STATION OVERLOOK
+            <span id="bearing">090° E</span></span
+          ><span id="weather">11°C / OVERCAST</span>
+        </div>
+        <div class="vista-bottom">
+          <div>
+            <span class="eyebrow">SOMERSET, UNITED KINGDOM</span>
+            <h1>A little power.<br />A lot of responsibility.</h1>
+          </div>
+          <div class="view-controls">
+            <button id="look-left" aria-label="Look left">←</button
+            ><span>LOOK AROUND</span
+            ><button id="look-right" aria-label="Look right">→</button>
+          </div>
+        </div>
+        <div id="emergency-banner" hidden>
+          EMERGENCY LIGHTING · AUXILIARY SUPPLY ACTIVE
+        </div>
+      </section>
+      <section class="timebar">
+        <div class="clock">
+          <span id="clock">06:00</span><span id="date">THU, 01 OCT 2026</span>
+        </div>
+        <div class="time-controls">
+          <button id="pause" aria-label="Pause simulation">Ⅱ</button>
+          <div class="speeds" aria-label="Simulation speed">
+            <button data-speed="1" class="selected" aria-pressed="true">
+              1×</button
+            ><button data-speed="3" aria-pressed="false">3×</button
+            ><button data-speed="6" aria-pressed="false">6×</button>
+          </div>
+          <select id="difficulty" aria-label="Difficulty">
+            <option value="relaxed">Relaxed shift</option>
+            <option value="standard">Standard shift</option>
+            <option value="challenging">Challenging shift</option>
+          </select>
+        </div>
+        <div class="shift-score">
+          <span class="live-dot"></span
+          ><span id="score">SHIFT JUST STARTED</span>
+        </div>
+      </section>
+      <main>
+        <section class="panel grid-panel">
+          <div class="panel-heading">
+            <h2><span class="number">01</span> THE GRID</h2>
+            <span id="balance-status" class="badge">IN BALANCE</span>
+          </div>
+          <div class="power-readings">
+            <div>
+              <span class="eyebrow">YOUR OUTPUT</span>
+              <div class="big-number">
+                <span id="output">606</span><span>MW</span>
+              </div>
+            </div>
+            <div class="demand-reading">
+              <span class="eyebrow">GRID DEMAND</span>
+              <div class="big-number">
+                <span id="demand">600</span><span>MW</span>
+              </div>
+            </div>
+          </div>
+          <div class="balance-track">
+            <span id="balance-marker"></span>
+            <div></div>
+          </div>
+          <div class="balance-labels">
+            <span>UNDER</span><span id="difference">ON TARGET</span
+            ><span>OVER</span>
+          </div>
+          <div class="chart-heading">
+            <h3>Demand outlook</h3>
+            <span
+              ><i class="legend output"></i> OUTPUT
+              <i class="legend demand"></i> DEMAND</span
+            >
+          </div>
+          <canvas
+            id="chart"
+            role="img"
+            aria-label="Power output history and forecast demand for the next three hours"
+          ></canvas>
+          <div class="chart-labels">
+            <span>−1H</span><span>NOW</span><span>+1H</span><span>+2H</span
+            ><span>+3H</span>
+          </div>
+          <div class="forecast">
+            <span class="forecast-icon">↗</span>
+            <div>
+              <span class="eyebrow">PLAN AHEAD</span>
+              <p id="forecast-text">Reading the grid forecast…</p>
+            </div>
+          </div>
+        </section>
+        <section class="panel plant-panel">
+          <div class="panel-heading">
+            <h2><span class="number">02</span> THE PLANT</h2>
+            <span id="plant-status" class="tiny-status">● RUNNING</span>
+          </div>
+          <div
+            class="flow"
+            aria-label="Heat flows from the reactor through the turbine to the grid, while the cooling loop removes waste heat"
+          >
+            <svg viewBox="0 0 400 130" aria-hidden="true">
+              <defs>
+                <pattern
+                  id="core-grid"
+                  width="8"
+                  height="8"
+                  patternUnits="userSpaceOnUse"
+                >
+                  <rect width="3" height="3" fill="#e6b57e" />
+                </pattern>
+              </defs>
+              <path class="pipe hot" d="M81 56 H180 M221 56 H329" />
+              <path class="pipe cold" d="M201 77 V111 H61 V77" />
+              <path class="pipe hot motion" d="M81 56 H180 M221 56 H329" />
+              <path class="pipe cold motion" d="M201 77 V111 H61 V77" />
+              <rect
+                class="machine"
+                x="39"
+                y="26"
+                width="44"
+                height="58"
+                rx="15"
+              />
+              <rect
+                x="49"
+                y="39"
+                width="24"
+                height="31"
+                fill="url(#core-grid)"
+              />
+              <path
+                stroke="#e6b57e"
+                stroke-width="3"
+                d="M54 18 V43 M62 18 V43 M70 18 V43"
+              />
+              <circle class="machine" cx="201" cy="56" r="26" />
+              <g id="turbine-rotor">
+                <path
+                  fill="#b9ed89"
+                  d="M199 53 187 36 Q209 32 204 53L223 50Q229 70 206 59L202 78Q182 80 196 58Z"
+                />
+              </g>
+              <circle cx="201" cy="56" r="4" fill="#e8eedc" />
+              <rect
+                class="machine"
+                x="330"
+                y="33"
+                width="35"
+                height="47"
+                rx="5"
+              />
+              <path
+                fill="none"
+                stroke="#b9ed89"
+                stroke-width="2"
+                d="m350 41-12 18h11l-5 14 14-21h-10z"
+              />
+              <text x="61" y="9">REACTOR</text>
+              <text x="201" y="9">TURBINE</text>
+              <text x="348" y="9">GRID</text>
+              <text x="133" y="128">COOLING LOOP</text>
+            </svg>
+          </div>
+          <div class="telemetry">
+            <div>
+              <span class="eyebrow">CORE TEMP</span
+              ><strong
+                ><span id="temperature">291</span><small> °C</small></strong
+              >
+              <div class="mini-track"><i id="temp-bar"></i></div>
+            </div>
+            <div>
+              <span class="eyebrow">THERMAL LOAD</span
+              ><strong><span id="heat">64</span><small> %</small></strong>
+              <div class="mini-track"><i id="heat-bar"></i></div>
+            </div>
+            <div>
+              <span class="eyebrow">CONDENSER</span
+              ><strong><span id="condenser">31</span><small> °C</small></strong>
+              <div class="mini-track"><i id="cool-bar"></i></div>
+            </div>
+          </div>
+          <div class="controls">
+            <div class="control">
+              <div class="control-title">
+                <label for="reactor"
+                  ><span class="control-symbol amber">◉</span> Reactor
+                  power</label
+                ><output id="reactor-value" for="reactor"
+                  >64<span>%</span></output
+                >
+              </div>
+              <input
+                id="reactor"
+                type="range"
+                min="0"
+                max="100"
+                value="64"
+                aria-describedby="reactor-hint"
+              />
+              <div class="control-hint" id="reactor-hint">
+                <span>LESS HEAT</span><span>MORE HEAT</span>
+              </div>
+            </div>
+            <div class="control">
+              <div class="control-title">
+                <label for="turbine"
+                  ><span class="control-symbol green">ϟ</span> Turbine
+                  valve</label
+                ><output id="turbine-value" for="turbine"
+                  >72<span>%</span></output
+                >
+              </div>
+              <input
+                id="turbine"
+                type="range"
+                min="0"
+                max="100"
+                value="72"
+                aria-describedby="turbine-hint"
+              />
+              <div class="control-hint" id="turbine-hint">
+                <span>LESS ELECTRICITY</span><span>MORE ELECTRICITY</span>
+              </div>
+            </div>
+            <div class="control">
+              <div class="control-title">
+                <label for="cooling"
+                  ><span class="control-symbol blue">≋</span> Cooling
+                  flow</label
+                ><output id="cooling-value" for="cooling"
+                  >65<span>%</span></output
+                >
+              </div>
+              <input
+                id="cooling"
+                type="range"
+                min="0"
+                max="100"
+                value="65"
+                aria-describedby="cooling-hint"
+              />
+              <div class="control-hint" id="cooling-hint">
+                <span>LOWER FLOW</span><span>MORE COOLING</span>
+              </div>
+            </div>
+          </div>
+          <div class="plant-actions">
+            <button id="breaker" aria-pressed="true">
+              <span class="live-dot"></span> GRID CONNECTED</button
+            ><button id="trip" class="trip-button">SHUT DOWN</button>
+          </div>
+        </section>
+        <aside class="panel news-panel">
+          <div class="panel-heading">
+            <h2><span class="number">03</span> THE WIRE</h2>
+            <span class="wire-icon">◔ LIVE</span>
+          </div>
+          <p class="news-intro">Tomorrow’s headlines. Today’s problem.</p>
+          <div id="news"></div>
+          <div class="operator-note">
+            <span class="eyebrow">OPERATOR’S NOTE</span>
+            <p id="advice">
+              Small changes work best. Give the plant time to respond.
+            </p>
+          </div>
+        </aside>
+      </main>
+      <footer>
+        <span
+          ><span class="live-dot"></span>
+          <span id="save-status">AUTOSAVE ON</span></span
+        ><span>KEEP THE LIGHTS ON. KEEP THE KETTLE ON.</span>
+        <div>
+          <button id="motion" aria-pressed="false">LOW MOTION</button
+          ><button id="reset">NEW SHIFT</button><a href="/">JAMIE EVERETT ↗</a>
+        </div>
+      </footer>
+    </div>
+    <dialog id="guide">
+      <form method="dialog">
+        <button class="close-dialog" aria-label="Close guide">×</button>
+      </form>
+      <span class="eyebrow">WELCOME TO YOUR SHIFT</span>
+      <h2>Keep the grid in balance.</h2>
+      <p>
+        Your job is to match the plant’s output to the green demand line. There
+        is no equipment wear, and no time limit.
+      </p>
+      <ol>
+        <li>
+          <strong>Make heat.</strong> Adjust reactor power. Heat and steam take
+          time to build or fall.
+        </li>
+        <li>
+          <strong>Make electricity.</strong> Open the turbine valve to turn
+          steam into power. Beyond 72%, the available steam limits output.
+        </li>
+        <li>
+          <strong>Keep it cool.</strong> More cooling improves heat removal and
+          makes larger plumes when heat is available. Pumps use some
+          electricity.
+        </li>
+        <li>
+          <strong>Read ahead.</strong> Weather, time, weekends and news change
+          demand. Prepare before an event starts.
+        </li>
+      </ol>
+      <p>
+        Low cooling can trigger an automatic shutdown. Keep cooling on, then
+        restart below 305°C. Disconnect the grid to see the site switch to
+        emergency lights.
+      </p>
+      <p>
+        Pause whenever you want. One day takes 15 minutes at 1×. Your shift
+        saves on this device. Difficulty changes the target tolerance and event
+        size.
+      </p>
+      <details>
+        <summary>About the simulation</summary>
+        <p>
+          This is a game with simplified thermal response and separate heat,
+          steam and cooling stages. It is not an operating model of a real
+          plant. The basic power cycle follows the
+          <a
+            href="https://www.nrc.gov/reactors/power/pwrs"
+            target="_blank"
+            rel="noopener noreferrer"
+            >NRC’s explanation of pressurised water reactors</a
+          >. Weather and news are fictional. The site lighting is deliberately
+          dramatised.
+        </p>
+      </details>
+      <button id="start" class="start-button">
+        TAKE THE CONTROLS <span>→</span>
+      </button>
+    </dialog>
+    <dialog id="reset-dialog">
+      <h2>Start a new shift?</h2>
+      <p>This replaces your saved shift and returns to 06:00 on 1 October.</p>
+      <div class="dialog-actions">
+        <button id="cancel-reset">Keep this shift</button
+        ><button id="confirm-reset" class="start-button">Start again</button>
+      </div>
+    </dialog>
+    <noscript>This simulator needs JavaScript to run.</noscript>
+  </body>
+</html>

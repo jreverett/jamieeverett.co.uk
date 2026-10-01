@@ -15,7 +15,8 @@
     "serve": "gatsby serve",
     "clean": "gatsby clean",
     "lint": "eslint --ext .js,.jsx src/",
-    "lint:fix": "eslint --ext .js,.jsx src/ --fix"
+    "lint:fix": "eslint --ext .js,.jsx src/ --fix",
+    "test:nuclear": "node --test tests/nuclear/model.test.mjs"
   },
   "dependencies": {
     "@netlify/blobs": "^10.7.9",
