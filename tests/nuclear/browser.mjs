@@ -31,55 +31,76 @@ const seed = async (overrides) => {
     { ...initialState(), paused: true, briefed: true, ...overrides },
   );
   await page.reload();
-  await page.locator("#continue-shift").click();
+  if (!overrides.meltdown) await page.locator("#continue-shift").click();
   await page.waitForTimeout(200);
 };
 try {
   await page.goto(url);
   assert.equal(await page.locator("#setup").evaluate((el) => el.open), true);
-  const frozen = await page.locator("#clock").innerText();
-  await page.waitForTimeout(300);
-  assert.equal(await page.locator("#clock").innerText(), frozen);
   await page.locator("input[name=mode][value=standard]").check();
   await page.locator("#start-shift").click();
   assert.match(
     await page.locator("#difficulty").innerText(),
     /STANDARD.*LOCKED/,
   );
-  assert.equal(await page.locator("#tutorial").isVisible(), true);
-  assert.equal(await page.locator("#pause").isDisabled(), true);
   for (let i = 0; i < 6; i++) {
-    assert.match(
-      await page.locator("#tutorial-step").innerText(),
-      new RegExp(`0${i + 1} / 06`),
-    );
+    assert.equal(await page.locator("#tutorial").isVisible(), true);
     await page.locator("#tutorial-next").click();
   }
   assert.equal(await page.locator("#tutorial").isVisible(), false);
-  await page
-    .getByRole("button", { name: "Pause simulation", exact: true })
-    .click();
-  await page.getByRole("button", { name: "Withdraw bank A rods" }).click();
-  assert.equal(await page.locator("#bank-0-value").innerText(), "63%");
-  await page.getByRole("button", { name: "Insert bank C rods" }).click();
-  await page.locator("#equalise").click();
-  assert.equal(await page.locator("#bank-0-value").innerText(), "58%");
-  await page.locator("#pump-a").click();
+  await page.waitForTimeout(800);
+  assert.ok(
+    Number(
+      await page.locator("#core-animation").getAttribute("data-particles"),
+    ) > 0,
+  );
+  const particlesBefore = await page
+    .locator("#core-animation")
+    .evaluate((el) => el.toDataURL());
+  await page.waitForTimeout(150);
+  assert.notEqual(
+    particlesBefore,
+    await page.locator("#core-animation").evaluate((el) => el.toDataURL()),
+  );
+  assert.equal(await page.locator("#pump-a,#pump-b,[data-bank]").count(), 0);
+  await page.locator("#insert-rods").click();
+  assert.equal(await page.locator("#rod-insertion").inputValue(), "47");
+  await page.waitForTimeout(400);
+  const position = Number(
+    await page.locator("#core-animation").getAttribute("data-position"),
+  );
+  assert.ok(position > 42 && position < 47);
+  await page.locator("#trip").click();
+  await page.waitForTimeout(1300);
+  assert.equal(
+    await page.locator("#core-animation").getAttribute("data-position"),
+    "100.0",
+  );
+  assert.equal(await page.locator("#rod-insertion").isDisabled(), true);
+  await page.waitForTimeout(4000);
+  assert.ok(
+    Number(
+      await page.locator("#core-animation").getAttribute("data-particles"),
+    ) < 3,
+  );
+  await page.getByRole("button", { name: "RELEASE STOP", exact: true }).click();
+  assert.equal(await page.locator("#rod-insertion").inputValue(), "100");
+  assert.equal(await page.locator("#rod-insertion").isDisabled(), false);
+  await page.locator("#withdraw-rods").click();
+  assert.equal(await page.locator("#rod-insertion").inputValue(), "95");
+  await page.reload();
+  await page.locator("input[name=mode][value=challenging]").check();
+  await page.locator("#continue-shift").click();
+  assert.match(await page.locator("#difficulty").innerText(), /STANDARD/);
+  assert.equal(await page.locator("#rod-insertion").inputValue(), "95");
+  await seed({});
+  await page.locator("#pump").click();
   assert.equal(
     await page.locator("#alarm-pumps").getAttribute("data-level"),
-    "1",
-  );
-  assert.equal(
-    await page
-      .locator("#alarm-pumps")
-      .evaluate((el) => el.classList.contains("unacknowledged")),
-    true,
+    "2",
   );
   await page.locator("#alarm-pumps").click();
-  assert.match(
-    await page.locator("#alarm-advice").innerText(),
-    /Switch on both primary pumps/,
-  );
+  assert.match(await page.locator("#alarm-advice").innerText(), /pump/);
   await page.locator("#acknowledge").click();
   assert.equal(
     await page
@@ -88,22 +109,10 @@ try {
     true,
   );
   assert.equal(
-    await page.locator("#pump-a").getAttribute("aria-pressed"),
+    await page.locator("#pump").getAttribute("aria-pressed"),
     "false",
   );
-  await page.locator("#pump-b").click();
-  assert.equal(
-    await page.locator("#alarm-pumps").getAttribute("data-level"),
-    "2",
-  );
-  assert.equal(
-    await page
-      .locator("#alarm-pumps")
-      .evaluate((el) => el.classList.contains("unacknowledged")),
-    true,
-  );
-  await page.locator("#pump-a").click();
-  await page.locator("#pump-b").click();
+  await page.locator("#pump").click();
   assert.equal(
     await page.locator("#alarm-pumps").getAttribute("data-level"),
     "0",
@@ -118,88 +127,106 @@ try {
     await page.locator("#bypass").getAttribute("aria-pressed"),
     "true",
   );
-  await page.reload();
-  assert.equal(await page.locator("#setup").evaluate((el) => el.open), true);
-  await page.locator("input[name=mode][value=challenging]").check();
-  await page.locator("#continue-shift").click();
-  assert.match(await page.locator("#difficulty").innerText(), /STANDARD/);
-  assert.equal(
-    await page.locator("#bypass").getAttribute("aria-pressed"),
-    "true",
-  );
-  assert.equal(await page.locator("#tutorial").isVisible(), false);
-  await page.locator("#help").click();
-  await page.locator("#tutorial-skip").click();
-  assert.equal(
-    await page
-      .getByRole("button", { name: "Resume simulation", exact: true })
-      .count(),
-    1,
-  );
-  await seed({ bankHeat: [20, 58, 90], rods: [20, 58, 90] });
-  const colours = await page
-    .locator(".fuel-cell")
-    .evaluateAll((cells) => [
-      getComputedStyle(cells[37]).backgroundColor,
-      getComputedStyle(cells[43]).backgroundColor,
-    ]);
-  assert.notEqual(colours[0], colours[1]);
-  assert.equal(
-    await page.locator("#alarm-banks").getAttribute("data-level"),
-    "2",
-  );
-  await seed({ minute: 120, cooling: 100 });
+  await seed({ minute: 0 });
   assert.match(await page.locator("#ticker-track").innerText(), /Kettle/);
-  const highPlume = await page
-    .locator("#landscape")
-    .evaluate((el) => el.toDataURL());
-  await seed({ minute: 120, cooling: 0 });
-  assert.notEqual(
-    highPlume,
-    await page.locator("#landscape").evaluate((el) => el.toDataURL()),
+  assert.doesNotMatch(
+    await page.locator("#ticker-track").innerText(),
+    /Minister|Bake-off/,
+  );
+  await page.locator("#open-news").click();
+  assert.equal(await page.locator("#news .news-item").count(), 1);
+  await page.getByRole("button", { name: "Close news" }).click();
+  await seed({ minute: 225 });
+  assert.match(
+    await page.locator("#ticker-track").innerText(),
+    /No demand events/,
+  );
+  assert.doesNotMatch(
+    await page.locator("#ticker-track").innerText(),
+    /Kettle/,
+  );
+  await seed({ minute: 240 });
+  assert.match(await page.locator("#ticker-track").innerText(), /Minister/);
+  assert.doesNotMatch(
+    await page.locator("#ticker-track").innerText(),
+    /Bake-off/,
   );
   await page.locator("#ticker-pause").click();
   assert.equal(
     await page.locator("#ticker-pause").getAttribute("aria-pressed"),
     "true",
   );
-  await page.locator("#open-news").click();
-  assert.match(await page.locator("#news").innerText(), /HAPPENING NOW/);
-  await page.getByRole("button", { name: "Close news" }).click();
-  await seed({ breaker: false });
-  assert.equal(await page.locator("#emergency-banner").isVisible(), true);
-  await page.locator("#breaker").click();
-  assert.equal(await page.locator("#emergency-banner").isVisible(), false);
-  await page.locator("#trip").click();
-  assert.equal(
-    await page
-      .getByRole("button", { name: "Withdraw bank A rods" })
-      .isDisabled(),
-    true,
-  );
-  await page.getByRole("button", { name: "RESTART", exact: true }).click();
-  assert.equal(await page.locator("#bank-0-value").innerText(), "35%");
-  await seed({
-    tripped: true,
-    tripReason: "High steam pressure",
-    pressure: 100,
-  });
-  assert.equal(
-    await page.getByRole("button", { name: "RESTART LOCKED" }).isDisabled(),
-    true,
-  );
-  assert.equal(
-    await page.locator("#alarm-pressure").getAttribute("data-level"),
-    "2",
-  );
-  await seed({
-    minute: 195,
-    bankHeat: [44, 58, 73],
-    rods: [44, 58, 73],
-    pumps: [true, false],
-  });
+  for (const [temperature, stage] of [
+    [350, "hot"],
+    [430, "sparks"],
+    [550, "fire"],
+  ]) {
+    await seed({ temperature });
+    assert.equal(await page.locator("body").getAttribute("data-heat"), stage);
+    assert.equal(
+      await page.locator("#heat-effects").getAttribute("data-stage"),
+      stage,
+    );
+    assert.equal(await page.locator("#rod-insertion").inputValue(), "42");
+    assert.equal(await page.locator("#trip").innerText(), "EMERGENCY STOP");
+  }
   await page.screenshot({
-    path: join(tmpdir(), "baseload-v2-desktop.png"),
+    path: join(tmpdir(), "baseload-v3-fire.png"),
+    fullPage: true,
+  });
+  await seed({
+    temperature: 699.9,
+    heat: 100,
+    rodInsertion: 0,
+    rodPosition: 0,
+    neutrons: 100,
+    pump: false,
+    paused: false,
+  });
+  await page.locator("#game-over").waitFor({ state: "visible" });
+  assert.equal(
+    await page.locator("body").getAttribute("data-heat"),
+    "meltdown",
+  );
+  assert.equal(await page.locator("#output").innerText(), "0");
+  await page.locator("#inspect-meltdown").click();
+  assert.equal(await page.locator("#trip").isDisabled(), true);
+  assert.equal(await page.locator("#pump").isDisabled(), true);
+  assert.equal(await page.locator("#rod-insertion").isDisabled(), true);
+  const endClock = await page.locator("#clock").innerText();
+  await page.waitForTimeout(300);
+  assert.equal(await page.locator("#clock").innerText(), endClock);
+  await page.reload();
+  assert.equal(
+    await page.locator("#game-over").evaluate((el) => el.open),
+    true,
+  );
+  assert.equal(await page.locator("#setup").evaluate((el) => el.open), false);
+  await page.locator("#new-after-meltdown").click();
+  assert.equal(await page.locator("#continue-shift").isVisible(), false);
+  await page.locator("input[name=mode][value=challenging]").check();
+  await page.locator("#include-tutorial").uncheck();
+  await page.locator("#start-shift").click();
+  assert.equal(await page.locator("body").getAttribute("data-heat"), "normal");
+  assert.equal(await page.locator("#clock").innerText(), "06:00");
+  assert.match(await page.locator("#difficulty").innerText(), /CHALLENGING/);
+  await seed({ minute: 195 });
+  await page.locator("#motion").click();
+  assert.equal(
+    await page.locator("#motion").getAttribute("aria-pressed"),
+    "true",
+  );
+  await page.waitForTimeout(100);
+  const still = await page
+    .locator("#core-animation")
+    .evaluate((el) => el.toDataURL());
+  await page.waitForTimeout(150);
+  assert.equal(
+    still,
+    await page.locator("#core-animation").evaluate((el) => el.toDataURL()),
+  );
+  await page.screenshot({
+    path: join(tmpdir(), "baseload-v3-desktop.png"),
     fullPage: true,
   });
   for (const [width, height] of [
@@ -211,47 +238,41 @@ try {
   ]) {
     await page.setViewportSize({ width, height });
     await page.waitForTimeout(120);
-    const dimensions = await page.evaluate(() => ({
+    const d = await page.evaluate(() => ({
       width: innerWidth,
       scrollWidth: document.documentElement.scrollWidth,
       height: innerHeight,
       scrollHeight: document.documentElement.scrollHeight,
-      actionsBottom: document
-        .querySelector(".plant-actions")
-        .getBoundingClientRect().bottom,
-      panelBottom: document
-        .querySelector(".plant-panel")
-        .getBoundingClientRect().bottom,
+      actions: document.querySelector(".plant-actions").getBoundingClientRect()
+        .bottom,
+      rods: document.querySelector(".core-limit").getBoundingClientRect()
+        .bottom,
+      panel: document.querySelector(".plant-panel").getBoundingClientRect()
+        .bottom,
     }));
     assert.ok(
-      dimensions.scrollWidth <= dimensions.width,
-      `horizontal overflow ${JSON.stringify(dimensions)}`,
+      d.scrollWidth <= d.width,
+      `horizontal overflow ${JSON.stringify(d)}`,
     );
     assert.ok(
-      dimensions.actionsBottom <= dimensions.panelBottom - 5,
-      `controls overflow panel ${JSON.stringify(dimensions)}`,
+      d.actions <= d.panel - 5 && d.rods <= d.panel - 5,
+      `controls overflow ${JSON.stringify(d)}`,
     );
     if (width >= 1024)
       assert.ok(
-        dimensions.scrollHeight <= dimensions.height + 10,
-        `desktop overflow ${JSON.stringify(dimensions)}`,
+        d.scrollHeight <= d.height + 10,
+        `desktop overflow ${JSON.stringify(d)}`,
       );
-    console.log("Layout", dimensions);
+    console.log("Layout", d);
     if (width === 390)
       await page.screenshot({
-        path: join(tmpdir(), "baseload-v2-mobile.png"),
+        path: join(tmpdir(), "baseload-v3-mobile.png"),
         fullPage: true,
       });
   }
-  await page.locator("#reset").click();
-  await page.locator("input[name=mode][value=challenging]").check();
-  await page.locator("#include-tutorial").uncheck();
-  await page.locator("#start-shift").click();
-  assert.match(await page.locator("#difficulty").innerText(), /CHALLENGING/);
-  assert.equal(await page.locator("#clock").innerText(), "06:00");
   assert.deepEqual(errors, []);
   console.log(
-    "PASS: difficulty selection and locking, tutorial, rod banks, fuel grid, alarm severity and acknowledgement, pumps, feedwater, bypass, saved game, news, plumes, lighting, recovery and responsive layouts.",
+    "PASS: moving neutrons and rods, manual stop and residual response, single pump, alarm acknowledgement, fixed difficulty, tutorial, feedwater, bypass, bounded news, escalating heat effects, terminal meltdown, saved game-over state, new shift and responsive layouts.",
   );
 } finally {
   await browser.close();

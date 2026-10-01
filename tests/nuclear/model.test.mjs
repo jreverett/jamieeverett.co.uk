@@ -3,228 +3,238 @@ import assert from "node:assert/strict";
 import {
   initialState,
   step,
-  demandAt,
-  environment,
-  events,
-  restore,
-  MODES,
-  alarms,
-  channelPower,
-  canRestart,
   shutdown,
   restart,
+  restore,
+  alarms,
+  heatStage,
+  newsEvents,
+  events,
+  demandAt,
+  environment,
+  MELTDOWN_TEMPERATURE,
 } from "../../static/nuclear/model.mjs";
-const run = (state, seconds) => {
-  for (let i = 0; i < seconds * 20; i++) step(state, 0.05);
-  return state;
+const run = (s, seconds) => {
+  for (let i = 0; i < seconds * 20; i++) step(s, 0.05);
+  return s;
 };
-test("heat and output lag a reactor increase", () => {
-  const state = Object.assign(initialState(), {
-    reactor: 90,
-    rods: [90, 90, 90],
-  });
-  run(state, 1);
-  assert.ok(state.heat > 58 && state.heat < 64);
-  assert.ok(state.output < 650);
-  run(state, 90);
-  assert.ok(state.output > 780);
+test("control rods move towards their target before heat and power respond", () => {
+  const s = initialState();
+  s.rodInsertion = 100;
+  run(s, 1);
+  assert.ok(s.rodPosition > 42 && s.rodPosition < 50);
+  assert.ok(s.neutrons < 58 && s.neutrons > 50);
+  assert.ok(s.heat > 55);
+  run(s, 60);
+  assert.equal(s.rodPosition, 100);
+  assert.ok(s.heat < 3);
+  assert.ok(s.output < 30);
 });
-test("inadequate cooling trips the reactor and cooling permits recovery", () => {
-  const state = Object.assign(initialState(), { reactor: 100, cooling: 0 });
-  run(state, 30);
-  assert.equal(state.tripped, true);
-  assert.equal(state.reactor, 0);
-  assert.ok(state.heat > 0);
-  state.cooling = 100;
-  run(state, 120);
-  assert.ok(state.temperature < 305);
-  assert.ok(state.output < 1);
+test("withdrawing rods increases sustained generation", () => {
+  const s = initialState();
+  s.rodInsertion = 10;
+  s.cooling = 100;
+  run(s, 100);
+  assert.equal(s.rodPosition, 10);
+  assert.ok(s.output > 850);
+  assert.equal(s.meltdown, false);
 });
-test("cooling restores output when condenser heat limits generation", () => {
-  const limited = Object.assign(initialState(), {
-    reactor: 85,
-    rods: [85, 85, 85],
-    cooling: 45,
-  });
-  run(limited, 35);
-  const improved = structuredClone(limited);
-  improved.cooling = 100;
-  run(improved, 60);
-  run(limited, 60);
-  assert.ok(improved.output > limited.output + 60);
-  assert.ok(improved.condenser < limited.condenser);
-  assert.ok(improved.temperature < limited.temperature);
+test("emergency stop rapidly inserts rods but does not remove residual heat", () => {
+  const s = initialState();
+  shutdown(s);
+  run(s, 1);
+  assert.equal(s.rodPosition, 100);
+  assert.ok(s.neutrons < 35);
+  assert.ok(s.heat > 50);
+  assert.equal(s.scrammed, true);
+  run(s, 60);
+  assert.ok(s.heat < 2);
+  assert.equal(s.meltdown, false);
 });
-test("closing the turbine reduces electricity without instantly removing heat", () => {
-  const state = Object.assign(initialState(), { turbine: 0 });
-  run(state, 30);
-  assert.ok(state.output < 1);
-  assert.ok(
-    state.heat < 58,
-    "the closed turbine eventually causes a pressure trip",
+test("releasing emergency stop does not withdraw the rods automatically", () => {
+  const s = initialState();
+  shutdown(s);
+  run(s, 2);
+  assert.equal(restart(s), true);
+  run(s, 5);
+  assert.equal(s.scrammed, false);
+  assert.equal(s.rodInsertion, 100);
+  assert.equal(s.rodPosition, 100);
+});
+test("high temperature, high pressure and low water never cause automatic rod insertion", () => {
+  for (const overrides of [
+    { temperature: 420 },
+    { pressure: 110 },
+    { water: 12, feedAuto: false, feedwater: 0 },
+  ]) {
+    const s = Object.assign(initialState(), overrides);
+    run(s, 1);
+    assert.equal(s.scrammed, false);
+    assert.equal(s.rodInsertion, 42);
+    assert.equal(s.meltdown, false);
+  }
+});
+test("leaving the pump off reaches all heat stages and causes a terminal meltdown", () => {
+  const s = initialState();
+  s.pump = false;
+  const stages = new Set();
+  for (let i = 0; i < 4000 && !s.meltdown; i++) {
+    step(s, 0.05);
+    stages.add(heatStage(s));
+  }
+  assert.deepEqual(
+    [...stages],
+    ["normal", "hot", "sparks", "fire", "meltdown"],
   );
-  assert.equal(state.tripReason, "High steam pressure");
+  assert.equal(s.temperature, MELTDOWN_TEMPERATURE);
+  assert.equal(s.output, 0);
+  assert.equal(s.breaker, false);
+  const before = structuredClone(s);
+  run(s, 50);
+  assert.deepEqual(s, before);
+  assert.equal(shutdown(s), false);
+  assert.equal(restart(s), false);
 });
-test("the breaker removes grid output and allows reconnection", () => {
-  const state = Object.assign(initialState(), { breaker: false });
-  run(state, 40);
-  assert.ok(state.output < 1);
-  state.breaker = true;
-  run(state, 40);
-  assert.ok(state.output > 590);
+test("emergency stop and cooling can recover a dangerously hot reactor", () => {
+  const s = initialState();
+  s.pump = false;
+  run(s, 70);
+  assert.ok(s.temperature > 450);
+  shutdown(s);
+  s.pump = true;
+  s.cooling = 100;
+  run(s, 100);
+  assert.equal(s.meltdown, false);
+  assert.ok(s.temperature < 310);
 });
-test("pause freezes all physics and the clock", () => {
-  const state = Object.assign(initialState(), { paused: true });
-  const before = structuredClone(state);
-  run(state, 100);
-  assert.deepEqual(state, before);
+test("low feedwater can cause meltdown without an automatic trip", () => {
+  const s = initialState();
+  s.feedAuto = false;
+  s.feedwater = 0;
+  run(s, 180);
+  assert.equal(s.scrammed, false);
+  assert.equal(s.meltdown, true);
 });
-test("one day takes fifteen minutes at normal speed", () => {
-  const state = run(initialState(), 900);
-  assert.ok(Math.abs(state.minute - 1440) < 0.001);
-  assert.equal(environment(state.minute + 0.001).date.getUTCDate(), 2);
+test("automatic feedwater restores a low drum before it causes core failure", () => {
+  const s = initialState();
+  s.feedAuto = false;
+  s.feedwater = 0;
+  run(s, 15);
+  assert.ok(s.water < 40);
+  s.feedAuto = true;
+  run(s, 90);
+  assert.ok(s.water > 60);
+  assert.equal(s.meltdown, false);
 });
-test("news changes the demand forecast at its published time", () => {
-  const story = events(0)[0];
-  assert.equal(story.hour, 8);
-  assert.equal(
-    demandAt(story.at - 1, "relaxed"),
-    demandAt(story.at - 1, "challenging"),
-  );
-  const difference =
-    demandAt(story.at + 20, "challenging") - demandAt(story.at + 20, "relaxed");
-  assert.ok(
-    Math.abs(
-      difference - story.mw * (MODES.challenging.scale - MODES.relaxed.scale),
-    ) < 0.01,
-  );
-});
-test("demand and forecasts remain finite across dates and difficulties", () => {
-  for (const mode of Object.keys(MODES))
-    for (let minute = 0; minute < 1440 * 14; minute += 17) {
-      const demand = demandAt(minute, mode);
-      assert.ok(demand >= 260 && demand <= 1040);
-      assert.ok(
-        events(minute).filter((event) => event.end > minute).length >= 3,
-      );
-    }
-});
-test("corrupt saves fall back safely and valid saves restore controls", () => {
-  for (const raw of [
-    "null",
-    "{}",
-    "{",
-    '{"version":1,"mode":"wrong"}',
-    JSON.stringify({ ...initialState(), cooling: 1000 }),
-  ])
-    assert.deepEqual(restore(raw), initialState());
-  const state = Object.assign(initialState(), {
-    reactor: 75,
-    speed: 3,
-    mode: "standard",
-    minute: 543,
-  });
-  assert.deepEqual(restore(JSON.stringify(state)), state);
-});
-test("extreme controls remain finite and bounded across a shift", () => {
-  for (const reactor of [0, 100])
-    for (const cooling of [0, 100]) {
-      const state = Object.assign(initialState(), {
-        reactor,
-        rods: [reactor, reactor, reactor],
-        cooling,
-        speed: 6,
-      });
-      run(state, 150);
-      for (const key of ["output", "heat", "steam", "temperature", "condenser"])
-        assert.ok(Number.isFinite(state[key]), key);
-      assert.ok(state.temperature <= 370);
-      assert.ok(state.output >= 0 && state.output < 1100);
-    }
-});
-test("separate rod banks change their channels and expose imbalance", () => {
-  const state = initialState();
-  state.rods = [10, 58, 90];
-  run(state, 20);
-  assert.ok(channelPower(state, 4, 1) < channelPower(state, 4, 7) - 35);
-  assert.ok(alarms(state).find((a) => a.id === "banks").level > 0);
-  state.rods = [50, 50, 50];
-  run(state, 100);
-  assert.equal(alarms(state).find((a) => a.id === "banks").level, 0);
-});
-test("stopping primary pumps causes heat removal failure", () => {
-  const state = initialState();
-  state.pumps = [false, false];
-  assert.equal(alarms(state).find((a) => a.id === "pumps").level, 2);
-  run(state, 60);
-  assert.equal(state.tripReason, "High core temperature");
-  assert.equal(canRestart(state), false);
-  state.pumps = [true, true];
-  state.cooling = 100;
-  run(state, 120);
-  assert.equal(canRestart(state), true);
-  assert.equal(restart(state), true);
-  assert.deepEqual(state.rods, [35, 35, 35]);
-});
-test("bypass relieves pressure but costs generator output", () => {
-  const state = initialState();
-  state.turbine = 15;
-  run(state, 12);
-  const pressure = state.pressure;
-  assert.ok(pressure > 80);
-  state.bypass = true;
-  run(state, 30);
-  assert.ok(state.pressure < pressure - 10);
-  assert.equal(state.tripped, false);
+test("steam bypass relieves pressure at the cost of output", () => {
+  const s = initialState();
+  s.turbine = 15;
+  run(s, 12);
+  const pressure = s.pressure;
+  s.bypass = true;
+  run(s, 30);
+  assert.ok(s.pressure < pressure - 10);
   const normal = run(initialState(), 40),
     bypass = initialState();
   bypass.bypass = true;
   run(bypass, 40);
   assert.ok(bypass.output < normal.output * 0.6);
 });
-test("manual feedwater can starve the drum and automatic feed recovers it", () => {
-  const state = initialState();
-  state.feedAuto = false;
-  state.feedwater = 0;
-  run(state, 15);
-  assert.ok(state.water < 45);
-  assert.ok(alarms(state).find((a) => a.id === "water").level > 0);
-  const starved = structuredClone(state);
-  run(starved, 70);
-  assert.equal(starved.tripReason, "Low steam drum level");
-  state.feedAuto = true;
-  run(state, 90);
-  assert.ok(state.water > 60);
-  assert.equal(state.tripped, false);
+test("pause freezes physics and the clock", () => {
+  const s = initialState();
+  s.paused = true;
+  const before = structuredClone(s);
+  run(s, 100);
+  assert.deepEqual(s, before);
 });
-test("restart checks pressure and water as well as temperature", () => {
-  const state = initialState();
-  shutdown(state);
-  state.pressure = 90;
-  assert.equal(restart(state), false);
-  state.pressure = 60;
-  state.water = 20;
-  assert.equal(restart(state), false);
-  state.water = 62;
-  assert.equal(restart(state), true);
+test("a normal shift remains stable for a complete simulated day", () => {
+  const s = run(initialState(), 900);
+  assert.ok(Math.abs(s.minute - 1440) < 0.001);
+  assert.equal(s.meltdown, false);
+  assert.ok(s.temperature < 310);
+  assert.equal(environment(s.minute + 0.001).date.getUTCDate(), 2);
 });
-test("first version saves migrate to balanced rod banks", () => {
+test("news only exposes active events and the next three hours", () => {
+  assert.deepEqual(
+    newsEvents(0).map((e) => e.hour),
+    [8],
+  );
+  assert.equal(newsEvents(225).length, 0);
+  assert.deepEqual(
+    newsEvents(240).map((e) => e.hour),
+    [13],
+  );
+  for (let minute = 0; minute < 1440 * 4; minute += 7) {
+    const news = newsEvents(minute);
+    assert.ok(news.length <= 3);
+    assert.ok(news.every((e) => e.at <= minute + 180 && e.end > minute));
+  }
+});
+test("events disappear from the feed when they finish", () => {
+  const e = events(0)[0];
+  assert.ok(newsEvents(e.end - 0.1).some((n) => n.at === e.at));
+  assert.ok(!newsEvents(e.end).some((n) => n.at === e.at));
+});
+test("demand is finite across dates and difficulties", () => {
+  for (const mode of ["relaxed", "standard", "challenging"])
+    for (let m = 0; m < 1440 * 7; m += 19) {
+      const d = demandAt(m, mode);
+      assert.ok(d >= 260 && d <= 1040);
+    }
+});
+test("current saves preserve controls, difficulty and game over", () => {
+  const s = initialState("challenging");
+  s.rodInsertion = 67;
+  s.pump = false;
+  run(s, 20);
+  assert.deepEqual(restore(JSON.stringify(s)), s);
+  s.temperature = 700;
+  step(s, 0.05);
+  const saved = restore(JSON.stringify(s));
+  assert.equal(saved.meltdown, true);
+  assert.equal(saved.paused, true);
+  assert.equal(saved.mode, "challenging");
+});
+test("old saves migrate to one rod control and one pump", () => {
   const legacy = {
     ...initialState("standard"),
-    version: 1,
-    reactor: 75,
-    heat: 72,
+    version: 2,
+    rods: [20, 50, 80],
+    pumps: [false, true],
+    tripped: false,
   };
-  const state = restore(JSON.stringify(legacy));
-  assert.equal(state.version, 2);
-  assert.equal(state.mode, "standard");
-  assert.deepEqual(state.rods, [75, 75, 75]);
-  assert.deepEqual(state.bankHeat, [72, 72, 72]);
+  const s = restore(JSON.stringify(legacy));
+  assert.equal(s.version, 3);
+  assert.equal(s.rodInsertion, 50);
+  assert.equal(s.pump, true);
+  assert.equal(s.mode, "standard");
+  assert.equal(s.briefed, false);
+  const stopped = restore(JSON.stringify({ ...legacy, tripped: true }));
+  assert.equal(stopped.scrammed, true);
+  assert.equal(stopped.rodInsertion, 100);
+  const oldest = restore(
+    JSON.stringify({ ...legacy, version: 1, reactor: 75 }),
+  );
+  assert.equal(oldest.rodInsertion, 25);
 });
-test("difficulty remains unchanged while operating", () => {
-  const state = initialState("challenging");
-  state.pumps = [false, true];
-  run(state, 100);
-  assert.equal(state.mode, "challenging");
-  assert.equal(restore(JSON.stringify(state)).mode, "challenging");
+test("invalid saves fail safely", () => {
+  for (const value of [
+    "null",
+    "{}",
+    "{",
+    JSON.stringify({ ...initialState(), rodInsertion: 101 }),
+    JSON.stringify({ ...initialState(), mode: "__proto__" }),
+  ])
+    assert.deepEqual(restore(value), initialState());
+});
+test("alarms give recovery advice without promising automatic protection", () => {
+  const s = initialState();
+  s.pump = false;
+  s.temperature = 520;
+  const list = alarms(s);
+  assert.equal(list.find((a) => a.id === "limit").level, 2);
+  assert.equal(list.find((a) => a.id === "pumps").level, 2);
+  assert.ok(
+    list.find((a) => a.id === "core").action.includes("no automatic shutdown"),
+  );
 });

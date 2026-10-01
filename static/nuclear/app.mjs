@@ -2,7 +2,8 @@ import {
   clamp,
   demandAt,
   environment,
-  events,
+  newsEvents,
+  heatStage,
   initialState,
   MODES,
   restore,
@@ -11,11 +12,11 @@ import {
   channelPower,
   hotspot,
   pumpFlow,
-  canRestart,
   shutdown,
   restart,
 } from "./model.mjs";
 import { createScene } from "./scene.mjs";
+import { createCore } from "./core.mjs";
 const $ = (id) => document.getElementById(id);
 const KEY = "baseload-shift-v1";
 let stored = null;
@@ -55,6 +56,8 @@ const dateFormat = new Intl.DateTimeFormat("en-GB", {
   timeZone: "UTC",
 });
 const scene = createScene($("landscape"));
+const core = createCore($("core-animation"), $("heat-effects"));
+let gameOverShown = false;
 const chart = $("chart"),
   ctx = chart.getContext("2d");
 let chartWidth = 0,
@@ -77,12 +80,6 @@ for (let row = 0; row < 9; row++)
     $("fuel-grid").append(cell);
     cells.push({ cell, row, col });
   }
-for (let i = 0; i < 3; i++) {
-  const bank = document.createElement("div");
-  bank.className = "rod-bank";
-  bank.innerHTML = `<label>BANK ${"ABC"[i]}</label><output id="bank-${i}-value">58%</output><div class="bank-buttons"><button data-bank="${i}" data-delta="-5" aria-label="Insert bank ${"ABC"[i]} rods">−</button><button data-bank="${i}" data-delta="5" aria-label="Withdraw bank ${"ABC"[i]} rods">+</button></div>`;
-  $("rod-banks").append(bank);
-}
 for (const alarm of alarms(state)) {
   const button = document.createElement("button");
   button.className = "annunciator";
@@ -114,28 +111,26 @@ function syncControls() {
     $(key).style.setProperty("--value", `${state[key]}%`);
     $(`${key}-value`).textContent = `${state[key]}%`;
   }
-  for (let i = 0; i < 3; i++)
-    $(`bank-${i}-value`).textContent = `${state.rods[i]}%`;
-  document
-    .querySelectorAll("[data-bank]")
-    .forEach((button) => (button.disabled = state.tripped));
-  $("equalise").disabled = state.tripped;
+  $("rod-insertion").value = state.rodInsertion;
+  $("rod-insertion").style.setProperty("--value", `${state.rodInsertion}%`);
+  $("rod-insertion-value").textContent = `${Math.round(state.rodInsertion)}%`;
+  $("rod-position-value").textContent = `${Math.round(state.rodPosition)}% IN`;
+  for (const id of ["rod-insertion", "withdraw-rods", "insert-rods"])
+    $(id).disabled = state.scrammed || state.meltdown;
   $("difficulty").textContent = `${state.mode.toUpperCase()} SHIFT · LOCKED`;
   $("pause").textContent = state.paused ? "▶" : "Ⅱ";
   $("pause").setAttribute(
     "aria-label",
     state.paused ? "Resume simulation" : "Pause simulation",
   );
-  $("pause").disabled = tutorialIndex >= 0;
+  $("pause").disabled = tutorialIndex >= 0 || state.meltdown;
   document.querySelectorAll("[data-speed]").forEach((button) => {
     const active = Number(button.dataset.speed) === state.speed;
     button.classList.toggle("selected", active);
     button.setAttribute("aria-pressed", String(active));
   });
-  for (const [i, id] of ["pump-a", "pump-b"].entries()) {
-    $(id).setAttribute("aria-pressed", String(state.pumps[i]));
-    $(id).querySelector("strong").textContent = state.pumps[i] ? "RUN" : "STOP";
-  }
+  $("pump").setAttribute("aria-pressed", String(state.pump));
+  $("pump").querySelector("strong").textContent = state.pump ? "RUN" : "STOP";
   $("feed-auto").setAttribute("aria-pressed", String(state.feedAuto));
   $("feed-manual").setAttribute("aria-pressed", String(!state.feedAuto));
   $("feed-less").disabled = state.feedAuto;
@@ -150,48 +145,54 @@ function syncControls() {
   $("breaker").innerHTML =
     `<span class="live-dot"></span> GRID ${state.breaker ? "CONNECTED" : "DISCONNECTED"}`;
   $("breaker").setAttribute("aria-pressed", String(state.breaker));
-  $("trip").textContent = state.tripped
-    ? canRestart(state)
-      ? "RESTART"
-      : "RESTART LOCKED"
-    : "EMERGENCY STOP";
-  $("trip").disabled = state.tripped && !canRestart(state);
+  $("trip").textContent = state.meltdown
+    ? "SHIFT ENDED"
+    : state.scrammed
+      ? "RELEASE STOP"
+      : "EMERGENCY STOP";
+  $("trip").disabled = state.meltdown;
+  for (const id of [
+    "pump",
+    "turbine",
+    "cooling",
+    "feed-auto",
+    "feed-manual",
+    "bypass",
+    "breaker",
+  ])
+    $(id).disabled = state.meltdown;
+  $("feed-less").disabled = state.feedAuto || state.meltdown;
+  $("feed-more").disabled = state.feedAuto || state.meltdown;
+  document
+    .querySelectorAll("[data-speed]")
+    .forEach((button) => (button.disabled = state.meltdown));
   document.body.classList.toggle("paused", state.paused);
   document.body.classList.toggle("low-motion", lowMotion);
   $("motion").setAttribute("aria-pressed", String(lowMotion));
 }
 function change(action) {
+  if (state.meltdown) return;
   action();
   syncControls();
   updateUI();
   save();
 }
-document.querySelectorAll("[data-bank]").forEach((button) =>
-  button.addEventListener("click", () =>
-    change(() => {
-      const i = Number(button.dataset.bank);
-      state.rods[i] = clamp(
-        state.rods[i] + Number(button.dataset.delta),
-        0,
-        100,
-      );
-    }),
-  ),
+$("rod-insertion").addEventListener("input", (event) =>
+  change(() => (state.rodInsertion = Number(event.target.value))),
 );
-$("equalise").addEventListener("click", () =>
-  change(() => {
-    const mean = Math.round(state.rods.reduce((a, b) => a + b, 0) / 3);
-    state.rods = [mean, mean, mean];
-  }),
+$("insert-rods").addEventListener("click", () =>
+  change(() => (state.rodInsertion = clamp(state.rodInsertion + 5, 0, 100))),
+);
+$("withdraw-rods").addEventListener("click", () =>
+  change(() => (state.rodInsertion = clamp(state.rodInsertion - 5, 0, 100))),
 );
 for (const key of ["turbine", "cooling"])
   $(key).addEventListener("input", (event) =>
     change(() => (state[key] = Number(event.target.value))),
   );
-for (const [i, id] of ["pump-a", "pump-b"].entries())
-  $(id).addEventListener("click", () =>
-    change(() => (state.pumps[i] = !state.pumps[i])),
-  );
+$("pump").addEventListener("click", () =>
+  change(() => (state.pump = !state.pump)),
+);
 $("feed-auto").addEventListener("click", () =>
   change(() => (state.feedAuto = true)),
 );
@@ -211,7 +212,7 @@ $("breaker").addEventListener("click", () =>
   change(() => (state.breaker = !state.breaker)),
 );
 $("trip").addEventListener("click", () =>
-  change(() => (state.tripped ? restart(state) : shutdown(state))),
+  change(() => (state.scrammed ? restart(state) : shutdown(state))),
 );
 $("pause").addEventListener("click", () =>
   change(() => (state.paused = !state.paused)),
@@ -321,13 +322,13 @@ const lessons = [
   ],
   [
     "#rod-console",
-    "Three banks. One reactor.",
-    "Withdraw rods (+) to make more heat. Insert them (−) to reduce heat. Each bank controls one vertical third of the glowing grid. Keep the banks close together.",
+    "Fuel stays. Control rods move.",
+    "The bright cells are fixed fuel assemblies. Cyan particles represent neutrons. Increase insertion to absorb more neutrons and reduce power. Watch the metal control rods move down into the core.",
   ],
   [
     "#support-controls",
     "Move heat. Keep water available.",
-    "Both pumps carry heat away from the core. Cooling flow removes waste heat. Automatic feedwater holds drum level near 62%. In manual mode, use −/+ to adjust the water supply.",
+    "The coolant pump carries heat away from the core. Cooling flow removes waste heat. Automatic feedwater holds drum level near 62%. In manual mode, use −/+ to adjust the water supply.",
   ],
   [
     "#steam-controls",
@@ -337,7 +338,7 @@ const lessons = [
   [
     "#alarm-panel",
     "Read the warning wall",
-    "Amber means caution; red means act now. Select a tile for the cause and remedy. Acknowledge stops the flash, not the fault. Emergency Stop inserts all rods; keep cooling on.",
+    "Amber means caution; red means act now. Select a tile for the cause and remedy. Acknowledge stops the flash, not the fault. There are no automatic trips. Emergency Stop inserts all rods, but keep cooling on. Meltdown at the game limit ends your shift.",
   ],
   [
     "#news-ticker",
@@ -366,6 +367,7 @@ function showLesson(index) {
   syncControls();
 }
 function startTutorial() {
+  if (state.meltdown) return;
   if (tutorialIndex >= 0) {
     showLesson(0);
     return;
@@ -401,7 +403,7 @@ function showSetup() {
   if (tutorialIndex >= 0) endTutorial();
   returnPaused = state.paused;
   state.paused = true;
-  $("continue-shift").hidden = !stored && !hasStarted;
+  $("continue-shift").hidden = state.meltdown || (!stored && !hasStarted);
   $("save-note").hidden = !stored && !hasStarted;
   $("continue-shift").textContent =
     `CONTINUE ${state.mode.toUpperCase()} SHIFT`;
@@ -411,6 +413,8 @@ function showSetup() {
 }
 $("reset").addEventListener("click", showSetup);
 $("start-shift").addEventListener("click", () => {
+  gameOverShown = false;
+  core.reset();
   state = initialState(
     document.querySelector("input[name=mode]:checked").value,
   );
@@ -437,7 +441,10 @@ $("continue-shift").addEventListener("click", () => {
 });
 $("setup").addEventListener("cancel", (event) => {
   event.preventDefault();
-  if (stored || hasStarted) $("continue-shift").click();
+  if (state.meltdown) {
+    $("setup").close();
+    showGameOver();
+  } else if (stored || hasStarted) $("continue-shift").click();
 });
 $("ticker-pause").addEventListener("click", () => {
   const paused = document.body.classList.toggle("ticker-paused");
@@ -462,9 +469,7 @@ document.addEventListener("keydown", (event) => {
   }
 });
 function updateNews() {
-  const next = events(state.minute)
-    .filter((event) => event.end > state.minute)
-    .slice(0, 3);
+  const next = newsEvents(state.minute);
   const key =
     next.map((event) => `${event.at}:${event.at <= state.minute}`).join(",") +
     state.mode;
@@ -488,6 +493,17 @@ function updateNews() {
       return article;
     }),
   );
+  if (!next.length) {
+    const item = document.createElement("span");
+    item.className = "ticker-item";
+    item.textContent =
+      "GRID DESK · No demand events announced in the next three hours. Watch the weather and demand forecast.";
+    group.append(item);
+    const empty = document.createElement("p");
+    empty.textContent =
+      "No active events or announcements for the next three hours.";
+    $("news").replaceChildren(empty);
+  }
   const duplicate = group.cloneNode(true);
   duplicate.setAttribute("aria-hidden", "true");
   $("ticker-track").replaceChildren(group, duplicate);
@@ -520,28 +536,52 @@ function updateUI() {
   $("core-peak").textContent = `${Math.round(hotspot(state))}°C PEAK`;
   for (const { cell, row, col } of cells) {
     const power = channelPower(state, row, col);
-    const heatStress = Math.max(0, hotspot(state) - 300) * 1.7;
+    const heatStress = Math.max(0, hotspot(state) - 310) * 0.22;
     const intensity = clamp(power + heatStress, 0, 100);
-    cell.style.backgroundColor = `hsl(${100 - intensity * 0.9} 65% ${9 + power * 0.42}%)`;
+    cell.style.backgroundColor = `hsl(${100 - intensity * 0.9} 65% ${9 + Math.max(power * 0.42, clamp((state.temperature - 300) / 400, 0, 1) * 45)}%)`;
     cell.style.boxShadow =
       power > 45
         ? `0 0 ${Math.round(power / 15)}px hsl(${100 - intensity * 0.9} 70% 50% / .18)`
         : "none";
-    cell.title = `Bank ${"ABC"[Math.min(2, Math.floor(col / 3))]} · channel ${row + 1}-${col + 1} · ${Math.round(power)}% power`;
+    cell.title = `Fixed fuel assembly ${row + 1}-${col + 1} · ${Math.round(power)}% thermal load`;
   }
   $("fuel-grid").setAttribute(
     "aria-label",
-    `Fuel channel power: banks A ${Math.round(state.bankHeat[0])}%, B ${Math.round(state.bankHeat[1])}%, C ${Math.round(state.bankHeat[2])}%. Peak ${Math.round(hotspot(state))} degrees.`,
+    `Fixed fuel assemblies. Control rods ${Math.round(state.rodPosition)}% inserted. Neutron activity ${Math.round(state.neutrons)}%. Core ${Math.round(state.temperature)} degrees.`,
   );
   const outage = state.output < 45 || !state.breaker;
   document.body.classList.toggle("emergency", outage);
   $("emergency-banner").hidden = !outage;
-  $("plant-status").textContent = state.tripped
-    ? "● REACTOR TRIPPED"
-    : !state.breaker
-      ? "● GRID OPEN"
-      : "● RUNNING";
-  $("plant-status").style.color = state.tripped ? "var(--red)" : "var(--green)";
+  const stage = heatStage(state);
+  document.body.dataset.heat = stage;
+  document.documentElement.style.setProperty(
+    "--heat",
+    clamp((state.temperature - 330) / 370, 0, 1),
+  );
+  $("heat-stage").textContent = state.meltdown
+    ? "MELTDOWN · GAME OVER"
+    : stage === "fire"
+      ? "CRITICAL · CORE OVERHEATING"
+      : stage === "sparks"
+        ? "DANGER · COOL THE CORE"
+        : stage === "hot"
+          ? "CORE TEMPERATURE RISING"
+          : "CORE STABLE";
+  $("limit-bar").style.width =
+    `${clamp(((state.temperature - 275) / 425) * 100, 0, 100)}%`;
+  $("plant-status").textContent = state.meltdown
+    ? "● MELTDOWN"
+    : state.scrammed
+      ? "● MANUAL STOP"
+      : !state.breaker
+        ? "● GRID OPEN"
+        : "● RUNNING";
+  $("plant-status").style.color =
+    state.meltdown || state.temperature >= 400
+      ? "var(--red)"
+      : state.scrammed
+        ? "var(--amber)"
+        : "var(--green)";
   $("score").textContent =
     state.elapsed < 10
       ? "SHIFT JUST STARTED"
@@ -620,8 +660,14 @@ function frame(now) {
   const dt = last ? Math.min((now - last) / 1000, 0.1) : 0;
   last = now;
   if (hasStarted) step(state, dt);
-  if (!state.paused) visualTime += dt;
+  if (!state.paused || state.meltdown) visualTime += dt;
   scene.draw(state, visualTime, lowMotion);
+  core.draw(state, dt, visualTime, lowMotion);
+  if (state.meltdown && !gameOverShown) {
+    updateUI();
+    save();
+    showGameOver();
+  }
   if (hasStarted && state.minute - lastHistory >= 2) {
     state.history.push([state.minute, state.output]);
     state.history = state.history.filter(
@@ -643,6 +689,22 @@ document.addEventListener("visibilitychange", () => {
   last = 0;
 });
 window.addEventListener("pagehide", save);
+function showGameOver() {
+  if (tutorialIndex >= 0) endTutorial();
+  gameOverShown = true;
+  state.paused = true;
+  $("final-stats").textContent =
+    `${timeFormat.format(environment(state.minute).date)} · ${Math.round(state.elapsed / 60)} minutes played · ${Math.round((state.matched / Math.max(1, state.elapsed)) * 100)}% in balance`;
+  if (!$("game-over").open) $("game-over").showModal();
+}
+$("new-after-meltdown").addEventListener("click", () => {
+  $("game-over").close();
+  showSetup();
+});
+$("inspect-meltdown").addEventListener("click", () => $("game-over").close());
 updateUI();
-showSetup();
+if (state.meltdown) {
+  hasStarted = true;
+  showGameOver();
+} else showSetup();
 requestAnimationFrame(frame);

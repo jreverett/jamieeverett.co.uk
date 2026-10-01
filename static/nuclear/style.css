@@ -683,73 +683,6 @@ h2 {
 .core-legend i:nth-child(4) {
   background: #ef6245;
 }
-.bank-caption {
-  font:
-    8px Mono,
-    monospace;
-  display: flex;
-  justify-content: space-between;
-  gap: 5px;
-  color: #c7d0be;
-  margin-top: auto;
-}
-.bank-caption span {
-  color: var(--muted);
-  font-size: 6px;
-}
-.rod-banks {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  margin-top: 8px;
-}
-.rod-bank {
-  border: 1px solid #455045;
-  border-radius: 3px;
-  background: #0e1818;
-  text-align: center;
-  padding: 6px;
-}
-.rod-bank label {
-  display: block;
-  font:
-    8px Mono,
-    monospace;
-  color: #9bab99;
-}
-.rod-bank output {
-  display: block;
-  font:
-    19px Mono,
-    monospace;
-  color: var(--green);
-  margin: 3px 0;
-}
-.bank-buttons {
-  display: flex;
-  gap: 4px;
-}
-.bank-buttons button {
-  flex: 1;
-  height: 27px;
-  font-size: 18px;
-  background: #28342c;
-  border: 1px solid #58614b;
-  box-shadow: 0 2px 0 #080e0b;
-}
-.bank-buttons button:active {
-  transform: translateY(1px);
-  box-shadow: none;
-}
-.equalise {
-  font:
-    8px Mono,
-    monospace;
-  padding: 7px;
-  margin-top: 8px;
-  width: 100%;
-  color: var(--muted);
-}
 .process-console {
   display: flex;
   flex-direction: column;
@@ -1388,20 +1321,8 @@ input[type="checkbox"] {
   .plant-actions {
     padding-top: 7px;
   }
-  .rod-bank output {
-    font-size: 17px;
-  }
-  .rod-bank {
-    padding: 4px;
-  }
-  .equalise {
-    padding: 5px;
-  }
   .core-legend {
     font-size: 6px;
-  }
-  .bank-caption span {
-    display: none;
   }
   .power-readings {
     margin-top: 20px;
@@ -1437,9 +1358,6 @@ input[type="checkbox"] {
   }
   .big-number {
     font-size: 37px;
-  }
-  .bank-caption span {
-    display: none;
   }
 }
 @media (max-width: 999px) {
@@ -1632,18 +1550,6 @@ input[type="checkbox"] {
   .core-legend {
     font-size: 8px;
   }
-  .bank-caption {
-    margin-top: 12px;
-  }
-  .rod-bank {
-    padding: 9px;
-  }
-  .bank-buttons button {
-    height: 36px;
-  }
-  .rod-bank output {
-    font-size: 25px;
-  }
   .process-console {
     gap: 13px;
   }
@@ -1709,9 +1615,6 @@ input[type="checkbox"] {
   }
   .difficulty-options small {
     font-size: 9px;
-  }
-  .bank-caption span {
-    display: block;
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -1780,12 +1683,6 @@ input[type="checkbox"] {
   .process-readings strong {
     font-size: 18px;
   }
-  .bank-buttons button {
-    height: 25px;
-  }
-  .rod-bank output {
-    margin: 2px 0;
-  }
   .annunciator {
     min-height: 48px;
   }
@@ -1811,5 +1708,203 @@ input[type="checkbox"] {
   }
   main {
     height: calc(100svh - 264px);
+  }
+}
+#fuel-grid {
+  position: relative;
+  overflow: hidden;
+}
+#core-animation {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  pointer-events: none;
+}
+.neutron-key {
+  color: #9aefff;
+}
+.rod-position {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font:
+    9px Mono,
+    monospace;
+  color: var(--muted);
+  margin-top: auto;
+}
+.rod-position strong {
+  font:
+    15px Mono,
+    monospace;
+  color: var(--blue);
+}
+.rod-control {
+  margin: 7px 0;
+}
+.rod-control .control-title {
+  font-size: 10px;
+}
+.rod-control .control-hint {
+  font-size: 6px;
+}
+.rod-buttons {
+  display: flex;
+  gap: 8px;
+}
+.rod-buttons button {
+  flex: 1;
+  height: 30px;
+  font:
+    9px Mono,
+    monospace;
+  background: linear-gradient(#35423b, #26312d);
+  border-color: #5e6d5d;
+  box-shadow: 0 2px 0 #080f0d;
+}
+.rod-buttons button:active {
+  transform: translateY(1px);
+  box-shadow: none;
+}
+.fuel-note {
+  font-size: 9px;
+  line-height: 1.4;
+  color: var(--muted);
+  margin: 8px 0;
+}
+.core-limit {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 6px;
+  font:
+    7px Mono,
+    monospace;
+  color: var(--muted);
+}
+.core-limit > div {
+  width: 100%;
+  height: 4px;
+  background: #ffffff09;
+}
+.core-limit i {
+  display: block;
+  height: 100%;
+  background: var(--green);
+}
+#heat-effects {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 6;
+  pointer-events: none;
+}
+body[data-heat="hot"] .plant-panel,
+body[data-heat="sparks"] .plant-panel,
+body[data-heat="fire"] .plant-panel,
+body[data-heat="meltdown"] .plant-panel {
+  border-color: #cc6c41;
+  box-shadow:
+    inset 0 0 60px rgba(238, 78, 22, calc(var(--heat) * 0.18)),
+    0 0 25px rgba(238, 78, 22, calc(var(--heat) * 0.18));
+}
+body[data-heat="sparks"] .core-limit,
+body[data-heat="fire"] .core-limit,
+body[data-heat="meltdown"] .core-limit {
+  color: #ff9a6a;
+}
+body[data-heat="sparks"] .core-limit i,
+body[data-heat="fire"] .core-limit i,
+body[data-heat="meltdown"] .core-limit i {
+  background: var(--red);
+}
+body[data-heat="fire"] .process-readings strong,
+body[data-heat="meltdown"] .process-readings strong {
+  color: #ff8a65;
+  text-shadow: 0 0 15px #f54a3280;
+}
+#game-over {
+  border-color: #ce704c;
+  background: linear-gradient(135deg, #30251f, #191c19);
+}
+#game-over::backdrop {
+  background: #100c0966;
+  backdrop-filter: none;
+}
+#game-over h2 {
+  color: #ffaf7d;
+  font-size: 36px;
+}
+.final-stats {
+  font:
+    10px Mono,
+    monospace;
+  color: #e7be98;
+  line-height: 1.7;
+  padding: 15px 0;
+  border-top: 1px solid #664233;
+  border-bottom: 1px solid #664233;
+}
+.news-ticker .ticker-item:only-child {
+  min-width: 600px;
+}
+@media (min-width: 1000px) and (max-height: 1000px) {
+  .vista {
+    height: 110px;
+  }
+  main {
+    height: calc(100svh - 304px);
+  }
+}
+@media (min-width: 1000px) and (max-height: 850px) {
+  .rod-control {
+    margin: 4px 0;
+  }
+  .fuel-note {
+    font-size: 8px;
+    margin: 5px 0;
+  }
+  .rod-buttons button {
+    height: 27px;
+    font-size: 8px;
+  }
+  .rod-position {
+    font-size: 8px;
+  }
+  .rod-position strong {
+    font-size: 13px;
+  }
+}
+@media (min-width: 1000px) and (max-height: 780px) {
+  .vista {
+    height: 70px;
+  }
+  main {
+    height: calc(100svh - 264px);
+  }
+}
+@media (max-width: 600px) {
+  .rod-position {
+    margin-top: 12px;
+  }
+  .rod-control {
+    margin: 10px 0;
+  }
+  .rod-control .control-title {
+    font-size: 12px;
+  }
+  .rod-buttons button {
+    height: 38px;
+    font-size: 10px;
+  }
+  .fuel-note {
+    font-size: 10px;
+  }
+  .core-limit {
+    font-size: 8px;
+    margin-bottom: 5px;
   }
 }

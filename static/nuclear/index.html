@@ -17,6 +17,7 @@
     <script type="module" src="./app.mjs"></script>
   </head>
   <body>
+    <canvas id="heat-effects" aria-hidden="true"></canvas>
     <div class="shell">
       <header>
         <a class="brand" href="./" aria-label="Baseload home"
@@ -156,17 +157,47 @@
               <div
                 id="fuel-grid"
                 role="img"
-                aria-label="Fuel channel power map. Each vertical third corresponds to rod bank A, B or C."
-              ></div>
+                aria-label="Fixed fuel assemblies, moving neutrons and control rods"
+              >
+                <canvas id="core-animation" aria-hidden="true"></canvas>
+              </div>
               <div class="core-legend">
-                <span>LOW <i></i><i></i><i></i><i></i> HIGH</span
-                ><span>HEAT / CHANNEL</span>
+                <span>FUEL <i></i><i></i><i></i><i></i> HEAT</span
+                ><span class="neutron-key">● NEUTRONS</span>
               </div>
-              <div class="bank-caption">
-                ROD WITHDRAWAL <span>MORE WITHDRAWAL = MORE HEAT</span>
+              <div class="rod-position">
+                <span>CONTROL RODS</span
+                ><strong id="rod-position-value">42% IN</strong>
               </div>
-              <div id="rod-banks" class="rod-banks"></div>
-              <button id="equalise" class="equalise">EQUALISE BANKS</button>
+              <div class="control rod-control">
+                <div class="control-title">
+                  <label for="rod-insertion">Insertion target</label
+                  ><output id="rod-insertion-value">42%</output>
+                </div>
+                <input
+                  id="rod-insertion"
+                  type="range"
+                  min="0"
+                  max="100"
+                  value="42"
+                  aria-describedby="rod-hint"
+                />
+                <div class="control-hint" id="rod-hint">
+                  <span>WITHDRAW / MORE POWER</span
+                  ><span>INSERT / LESS POWER</span>
+                </div>
+              </div>
+              <div class="rod-buttons">
+                <button id="withdraw-rods">↑ WITHDRAW</button
+                ><button id="insert-rods">↓ INSERT</button>
+              </div>
+              <p class="fuel-note">
+                Fuel stays fixed. Moving control rods absorb neutrons.
+              </p>
+              <div class="core-limit">
+                <span id="heat-stage">CORE STABLE</span><span>700°C LIMIT</span>
+                <div><i id="limit-bar"></i></div>
+              </div>
             </section>
             <section class="process-console">
               <div class="process-readings">
@@ -189,16 +220,12 @@
               </div>
               <div id="support-controls">
                 <div class="instrument-label">
-                  <span>PRIMARY COOLANT PUMPS</span
+                  <span>COOLANT CIRCULATION</span
                   ><span id="flow-reading">65% FLOW</span>
                 </div>
-                <div class="switch-row">
-                  <button id="pump-a" class="plant-switch" aria-pressed="true">
-                    <i></i>PUMP A <strong>RUN</strong></button
-                  ><button id="pump-b" class="plant-switch" aria-pressed="true">
-                    <i></i>PUMP B <strong>RUN</strong>
-                  </button>
-                </div>
+                <button id="pump" class="plant-switch" aria-pressed="true">
+                  <i></i>COOLANT PUMP <strong>RUN</strong>
+                </button>
                 <div class="control">
                   <div class="control-title">
                     <label for="cooling">Cooling flow</label
@@ -366,6 +393,17 @@
       <span class="eyebrow">GRID INTELLIGENCE</span>
       <h2 id="news-title">The Wire</h2>
       <div id="news"></div>
+    </dialog>
+    <dialog id="game-over" aria-labelledby="game-over-title">
+      <span class="eyebrow">SHIFT TERMINATED / CORE FAILURE</span>
+      <h2 id="game-over-title">Reactor meltdown.</h2>
+      <p>The core reached its thermal limit. This shift is over.</p>
+      <div id="final-stats" class="final-stats"></div>
+      <button id="new-after-meltdown" class="start-button">
+        START A NEW SHIFT <span>→</span></button
+      ><button id="inspect-meltdown" class="continue-button">
+        INSPECT CONTROL ROOM
+      </button>
     </dialog>
     <noscript>This simulator needs JavaScript to run.</noscript>
   </body>
