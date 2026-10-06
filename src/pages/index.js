@@ -52,6 +52,47 @@ export default function Home() {
     }
   }, [])
 
+  // Content stays visible unless the independent reveal animation is ready.
+  useEffect(() => {
+    const cards = Array.from(document.querySelectorAll(".section-card"))
+    const revealAll = () => {
+      cards.forEach(card => card.classList.remove("reveal-pending"))
+    }
+
+    if (
+      typeof IntersectionObserver === "undefined" ||
+      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches
+    ) {
+      return undefined
+    }
+
+    let observer
+    try {
+      observer = new IntersectionObserver(
+        entries => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.classList.remove("reveal-pending")
+              observer.unobserve(entry.target)
+            }
+          })
+        },
+        { threshold: 0.1, rootMargin: "0px 0px -50px 0px" }
+      )
+      cards.forEach(card => observer.observe(card))
+      cards.forEach(card => card.classList.add("reveal-pending"))
+    } catch {
+      if (observer) observer.disconnect()
+      revealAll()
+      return undefined
+    }
+
+    return () => {
+      observer.disconnect()
+      revealAll()
+    }
+  }, [])
+
   const data = useStaticQuery(graphql`
     query ProjectsQuery {
       site {
@@ -100,6 +141,7 @@ export default function Home() {
     }
 
     const canvas = canvasRef.current
+    const subtitle = subtitleRef.current
     if (!canvas) {
       return undefined
     }
@@ -372,6 +414,8 @@ export default function Home() {
     const buildSubtitleGlyphMask = () => {
       const el = subtitleRef.current
       const overlay = subtitleOverlayRef.current
+      if (el) el.classList.remove("shader-subtitle-active")
+      subGlyphAlpha = null
       if (!el || !overlay) {
         subGlyphAlpha = null
         return
@@ -389,6 +433,15 @@ export default function Home() {
         subColorCtx.letterSpacing = style.letterSpacing
       }
       const textW = subColorCtx.measureText(content).width
+      const lineHeight = parseFloat(style.lineHeight)
+      // The mask draws one line. Keep wrapped or reduced-motion text in the DOM.
+      if (
+        textW + 8 > rect.width ||
+        (Number.isFinite(lineHeight) && rect.height > lineHeight + 1) ||
+        window.matchMedia?.("(prefers-reduced-motion: reduce)").matches
+      ) {
+        return
+      }
       // +8px guard: measureText returns the advance width, which can slightly
       // under-measure the final glyph's ink — pad so the last letter never clips.
       const w = Math.max(1, Math.min(Math.round(rect.width), Math.ceil(textW) + 8))
@@ -479,6 +532,7 @@ export default function Home() {
         }
       }
       octx.putImageData(subImageData, 0, 0)
+      if (fade >= 0.99) el.classList.add("shader-subtitle-active")
     }
 
     // Per-frame display setup: interpolate the overlay fades and set the homepage
@@ -544,21 +598,6 @@ export default function Home() {
         glCtx.uniform1i(display.uniforms.uHasHint, 0)
       }
     }
-
-    // Reveal section cards as they scroll into view (unrelated to the fluid).
-    const observer = new IntersectionObserver(
-      entries => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("visible")
-          }
-        })
-      },
-      { threshold: 0.1, rootMargin: "0px 0px -50px 0px" }
-    )
-
-    const cards = document.querySelectorAll(".section-card")
-    cards.forEach(card => observer.observe(card))
 
     const handleScroll = () => {
       // Fade out button overlay while scrolling
@@ -632,7 +671,7 @@ export default function Home() {
       if (scrollTimeout) {
         clearTimeout(scrollTimeout)
       }
-      observer.disconnect()
+      if (subtitle) subtitle.classList.remove("shader-subtitle-active")
       document.documentElement.classList.remove("fluid-active")
       engine.destroy()
     }
