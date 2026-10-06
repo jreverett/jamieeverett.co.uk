@@ -153,11 +153,9 @@ body.no-select {
   margin-bottom: 1.5rem;
 }
 
-/* When the WebGL fluid sim is running, the subtitle glyphs are painted per-pixel
-   (cyan → gold over splashes) onto the overlay canvas, which sits above the hero's
-   legibility scrim. Hide the HTML text so only the overlay shows; falls back to
-   plain cyan text if WebGL is unavailable. */
-.fluid-active .hero .subtitle {
+/* Use the shader subtitle only after a complete single-line frame is ready.
+   Wrapped text and graphics failures keep the readable DOM subtitle. */
+.hero .subtitle.shader-subtitle-active {
   color: transparent;
 }
 
@@ -168,6 +166,11 @@ body.no-select {
   width: 100%;
   height: 100%;
   pointer-events: none;
+  visibility: hidden;
+}
+
+.shader-subtitle-active .subtitle-overlay {
+  visibility: visible;
 }
 
 .hero-intro {
@@ -365,14 +368,31 @@ section {
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
   position: relative;
   overflow: hidden;
-  opacity: 0;
-  transform: translateY(30px);
+  opacity: 1;
+  transform: translateY(0);
   transition: opacity 0.6s ease, transform 0.6s ease;
 }
 
-.section-card.visible {
-  opacity: 1;
-  transform: translateY(0);
+.section-card.reveal-pending {
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero .subtitle.shader-subtitle-active {
+    color: var(--accent);
+  }
+
+  .shader-subtitle-active .subtitle-overlay {
+    visibility: hidden;
+  }
+
+  .section-card,
+  .section-card.reveal-pending {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
 }
 
 .section-card::before,
