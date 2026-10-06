@@ -685,12 +685,11 @@ export default function Home() {
           <div className="hero-content">
             <h1>Jamie Everett</h1>
             <p className="subtitle" ref={subtitleRef}>
-              Software Engineering Manager
+              Senior Software Engineer at One Strategy Studio
               <canvas className="subtitle-overlay" ref={subtitleOverlayRef} aria-hidden="true" />
             </p>
             <p className="hero-intro">
-              Building robust desktop and cloud applications with 5+ years of experience.
-              Currently focused on ultrasonic NDT monitoring systems at Inductosense.
+              Building tools for AI agents and reliable software with .NET and Azure.
             </p>
             <div className="hero-links">
               <a href="https://linkedin.com/in/jamieeverett1" target="_blank" rel="noreferrer" data-splash="link">
@@ -739,7 +738,7 @@ export default function Home() {
             <div className="glow-line" />
             <h2 className="section-title">About</h2>
             <p className="section-body">
-              I&apos;m a{" "}
+              I’m a{" "}
               <a
                 href="https://goo.gl/maps/VbZyJHhXb4CwRYxN9"
                 target="_blank"
@@ -747,13 +746,10 @@ export default function Home() {
               >
                 Bristol-based
               </a>{" "}
-              software engineering manager leading the development of ultrasonic NDT monitoring
-              tools at{" "}
-              <a href="https://www.inductosense.com/" target="_blank" rel="noreferrer">
-                Inductosense
-              </a>
-              . I focus on building reliable cross-platform products that blend desktop
-              performance with cloud connectivity.
+              Senior Software Engineer at One Strategy Studio, building AI-driven products
+              with C#/.NET, Azure, SQL and Blazor. I use AI throughout my engineering work
+              and I’m developing collaborative agent workflows, from backlog refinement
+              through implementation, testing and review.
             </p>
             <p className="section-body">
               I earned a first-class BSc (Hons.) in Computing from the{" "}
@@ -830,15 +826,35 @@ export default function Home() {
             <div className="experience-item">
               <div className="experience-header">
                 <div>
+                  <div className="experience-title">Senior Software Engineer</div>
+                  <div className="experience-company">One Strategy Studio</div>
+                </div>
+                <div className="experience-date">Jul 2026 → Present</div>
+              </div>
+              <p className="experience-desc">
+                Building AI-driven products with C#/.NET, Azure, SQL and Blazor.
+              </p>
+              <ul className="experience-highlights">
+                <li>
+                  I use AI throughout my engineering work and I’m developing collaborative
+                  agent workflows, from backlog refinement through implementation, testing
+                  and review.
+                </li>
+              </ul>
+            </div>
+
+            <div className="experience-item">
+              <div className="experience-header">
+                <div>
                   <div className="experience-title">
                     Software Engineer → Senior SE → Engineering Manager
                   </div>
                   <div className="experience-company">Inductosense</div>
                 </div>
-                <div className="experience-date">Nov 2023 → Present</div>
+                <div className="experience-date">Nov 2023 → Jul 2026</div>
               </div>
               <p className="experience-desc">
-                Developing ultrasonic NDT monitoring software for oil and gas, serving 100+
+                Developed ultrasonic NDT monitoring software for oil and gas, serving 100+
                 enterprise customers.
               </p>
               <ul className="experience-highlights">
