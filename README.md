@@ -19,3 +19,29 @@ npm start
 ```
 
 The site will be available at `http://localhost:8000`.
+
+## Sharp security override compatibility
+
+Sharp 0.35.5 is pinned outside Gatsby's declared 0.32.x range. The temporary,
+site-owned `scripts/sharp-trim-compat.cjs` repair converts numeric trim thresholds
+to Sharp's options-object API in both Gatsby shared transform implementations.
+This covers workers (including StaticImage), inline previews and legacy APIs,
+including numeric trim introduced by merged plugin defaults. It does not change
+Sharp's validation of nonnumeric options.
+
+The repair runs after installation and before npm build/develop/start. It checks
+exact package versions and upstream file hashes, validates both files before any
+write, and is idempotent. Unknown upstream code fails rather than receiving a
+blind patch. The Gatsby config also applies it before plugin loading, covering
+direct CLI
+builds even when installation scripts were skipped. A required file already
+loaded unpatched fails rather than attempting unsafe cache eviction.
+Review/remove the repair when Gatsby gains native support for newer Sharp.
+
+Run `npm run test:sharp-compat` for fresh-process native trim regressions.
+Every Gatsby build also emits `FRESH_SHARP_NATIVE_PROOF` before bootstrap after
+new PNG/WebP/AVIF outputs and an inline preview are processed in a unique temporary
+directory. The proof records platform, Node, Sharp, libvips and librsvg versions;
+a cached green deployment without this proof is insufficient for this PR's
+hosting gate. For full-site fresh-image evidence, build with an empty `.cache`
+and `public` directory and check the completed Sharp job count.

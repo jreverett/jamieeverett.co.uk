@@ -16,7 +16,12 @@
     "clean": "gatsby clean",
     "lint": "eslint --ext .js,.jsx src/",
     "lint:fix": "eslint --ext .js,.jsx src/ --fix",
-    "test:nuclear": "node --test tests/nuclear/model.test.mjs"
+    "test:nuclear": "node --test tests/nuclear/model.test.mjs",
+    "postinstall": "node scripts/sharp-trim-compat.cjs",
+    "prebuild": "node scripts/sharp-trim-compat.cjs",
+    "predevelop": "node scripts/sharp-trim-compat.cjs",
+    "prestart": "node scripts/sharp-trim-compat.cjs",
+    "test:sharp-compat": "node --test tests/sharp/trim.test.cjs"
   },
   "dependencies": {
     "@netlify/blobs": "^10.7.9",
@@ -47,6 +52,7 @@
     "ws": "^8.21.0",
     "form-data": "^4.0.6",
     "@babel/core": "^7.29.7",
-    "js-yaml": "^4.2.0"
+    "js-yaml": "^4.2.0",
+    "sharp": "0.35.5"
   }
 }
