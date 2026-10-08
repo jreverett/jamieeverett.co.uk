@@ -1,6 +1,8 @@
 /**
  * @type {import('gatsby').GatsbyConfig}
  */
+// Apply before Gatsby loads plugin modules, including direct `gatsby build`.
+require("./scripts/sharp-trim-compat.cjs").repair()
 const path = require("path")
 module.exports = {
   siteMetadata: {
